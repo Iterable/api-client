@@ -4,7 +4,7 @@ import https from "node:https";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { parse as csvParse } from "csv-parse/sync";
 import { z } from "zod";
 
@@ -153,24 +153,28 @@ export class BaseIterableClient {
 
   /**
    * Parse CSV response into an array of objects using csv-parse library
+   * @throws IterableResponseValidationError if CSV parsing fails
    */
-  public parseCsv(data: string): any[] {
-    if (!data) {
+  public parseCsv(response: AxiosResponse<string>): Record<string, string>[] {
+    if (!response.data) {
       return [];
     }
 
     try {
-      return csvParse(data, {
+      return csvParse(response.data, {
         columns: true, // Use first line as headers
         skip_empty_lines: true,
         trim: true,
       });
     } catch (error) {
-      // Log error but don't throw - return empty array for graceful degradation
-      logger.warn("Failed to parse CSV data", {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return [];
+      // Throw validation error to maintain consistent error handling
+      // This allows callers to handle parse failures appropriately
+      throw new IterableResponseValidationError(
+        200,
+        response.data,
+        `CSV parse error: ${error instanceof Error ? error.message : String(error)}`,
+        response.config?.url
+      );
     }
   }
 

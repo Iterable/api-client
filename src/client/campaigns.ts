@@ -4,6 +4,7 @@ import {
   ArchiveCampaignsParams,
   ArchiveCampaignsResponse,
   ArchiveCampaignsResponseSchema,
+  CampaignMetricsResponse,
   CancelCampaignParams,
   CreateCampaignParams,
   CreateCampaignResponse,
@@ -111,7 +112,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
 
     async getCampaignMetrics(
       options: GetCampaignMetricsParams
-    ): Promise<any[]> {
+    ): Promise<CampaignMetricsResponse> {
       const params = new URLSearchParams();
       params.append("campaignId", options.campaignId.toString());
       if (options.startDateTime)
@@ -127,7 +128,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
       );
 
       // Parse CSV response into array of objects
-      return this.parseCsv(response.data);
+      return this.parseCsv(response);
     }
 
     async scheduleCampaign(

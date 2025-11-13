@@ -42,7 +42,7 @@ export function Experiments<T extends Constructor<BaseIterableClient>>(
       });
 
       // Parse CSV response into array of objects
-      return this.parseCsv(response.data);
+      return this.parseCsv(response);
     }
   };
 }

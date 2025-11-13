@@ -288,6 +288,15 @@ describe("Campaign Management", () => {
         { responseType: "text" }
       );
     });
+
+    it("should throw IterableResponseValidationError for invalid CSV", async () => {
+      const mockResponse = { data: "invalid,csv\n\ndata" };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      await expect(
+        client.getCampaignMetrics({ campaignId: 12345 })
+      ).rejects.toThrow("CSV parse error");
+    });
   });
 
   describe("getChildCampaigns", () => {

@@ -114,6 +114,9 @@ export type GetCampaignResponse = z.infer<typeof GetCampaignResponseSchema>;
 export type GetCampaignMetricsParams = z.infer<
   typeof GetCampaignMetricsParamsSchema
 >;
+export type CampaignMetricsResponse = z.infer<
+  typeof CampaignMetricsResponseSchema
+>;
 export type CreateCampaignParams = z.infer<typeof CreateCampaignParamsSchema>;
 export type CreateCampaignResponse = z.infer<
   typeof CreateCampaignResponseSchema
@@ -136,8 +139,10 @@ export const CampaignsResponseSchema = z.object({
   campaigns: z.array(CampaignDetailsSchema),
 });
 
+// The API returns CSV data which we parse into objects
+// All CSV values are strings
 export const CampaignMetricsResponseSchema = z
-  .array(z.record(z.string(), z.any()))
+  .array(z.record(z.string(), z.string()))
   .describe("Parsed campaign metrics data");
 
 // Campaign creation schemas

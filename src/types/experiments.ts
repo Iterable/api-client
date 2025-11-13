@@ -8,7 +8,7 @@ import { IterableDateTimeSchema } from "./common.js";
 
 // The API returns CSV data which we parse into objects
 export const ExperimentMetricsResponseSchema = z
-  .array(z.record(z.string(), z.any()))
+  .array(z.record(z.string(), z.string()))
   .describe("Parsed experiment metrics data");
 
 export const GetExperimentMetricsParamsSchema = z
