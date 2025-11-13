@@ -217,5 +217,14 @@ describe("Experiment Operations", () => {
       expect(result).toEqual(expectedParsedData);
       expect(Array.isArray(result)).toBe(true);
     });
+
+    it("should throw IterableResponseValidationError for invalid CSV", async () => {
+      const mockResponse = { data: "invalid,csv\n\ndata" };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      await expect(client.getExperimentMetrics()).rejects.toThrow(
+        "CSV parse error"
+      );
+    });
   });
 });
