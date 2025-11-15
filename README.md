@@ -2,6 +2,10 @@
 
 TypeScript client library for the [Iterable API](https://api.iterable.com/api/docs).
 
+**Important:** This library is maintained for use in the [Iterable MCP server](https://github.com/Iterable/mcp-server) and internal Iterable projects. The API may change at any time. If using this library directly in your own projects, be prepared to adapt to breaking changes.
+
+Pull requests for bugfixes and improvements are always welcome and appreciated.
+
 ## Installation
 
 ```bash
