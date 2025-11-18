@@ -2,9 +2,9 @@
 
 TypeScript client library for the [Iterable API](https://api.iterable.com/api/docs).
 
-**Important:** This library is maintained for use in the [Iterable MCP server](https://github.com/Iterable/mcp-server) and internal Iterable projects. The API may change at any time. If using this library directly in your own projects, be prepared to adapt to breaking changes.
+This library is currently in active development. While it is used in production by the [Iterable MCP server](https://github.com/Iterable/mcp-server), it is still considered experimental. We are rapidly iterating on features and improvements, so you may encounter breaking changes or incomplete type definitions.
 
-Pull requests for bugfixes and improvements are always welcome and appreciated.
+We welcome early adopters and feedback! If you're building with it, please stay in touch via issues or pull requests.
 
 ## Installation
 
@@ -48,7 +48,8 @@ const client = new IterableClient({
   apiKey: 'your-api-key',
   baseUrl: 'https://api.iterable.com', // optional
   timeout: 30000, // optional
-  debug: false // optional
+  debug: true, // log requests/responses (headers/params redacted)
+  debugVerbose: false // set true to log response bodies (CAUTION: may contain PII)
 });
 ```
 
@@ -56,9 +57,10 @@ const client = new IterableClient({
 
 ```bash
 ITERABLE_API_KEY=your-api-key     # Required
-ITERABLE_DEBUG=true               # Optional: Enable debug logging
-LOG_LEVEL=info                    # Optional: Log level
-LOG_FILE=./logs/iterable.log      # Optional: Log to file
+ITERABLE_DEBUG=true               # Enable basic debug logging
+ITERABLE_DEBUG_VERBOSE=true       # Enable full body logging (includes PII)
+LOG_LEVEL=info                    # Log level
+LOG_FILE=./logs/iterable.log      # Log to file
 ```
 
 ## Development

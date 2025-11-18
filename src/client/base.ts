@@ -80,19 +80,32 @@ export class BaseIterableClient {
       );
 
       // Add debug logging interceptors (only when debug is enabled)
+      // WARNING: Never enable debug mode in production as it may log sensitive information
       if (clientConfig.debug) {
+        const sanitizeHeaders = (headers: any) => {
+          if (!headers) return undefined;
+          const sensitive = ["api-key", "authorization", "cookie", "set-cookie"];
+          const sanitized = { ...headers };
+          Object.keys(sanitized).forEach((key) => {
+            if (sensitive.includes(key.toLowerCase())) {
+              sanitized[key] = "[REDACTED]";
+            }
+          });
+          return sanitized;
+        };
+
         this.client.interceptors.request.use((request) => {
           logger.debug("API request", {
             method: request.method?.toUpperCase(),
             url: request.url,
+            headers: sanitizeHeaders(request.headers),
           });
           return request;
         });
 
-        // Helper function to create log data from response/error
         const createResponseLogData = (response: any, includeData = false) => ({
           status: response.status,
-          url: response.config?.url || response.config.url,
+          url: response.config?.url,
           ...(includeData && { data: response.data }),
         });
 
@@ -106,14 +119,14 @@ export class BaseIterableClient {
           },
           (error) => {
             if (error.response) {
+              // CRITICAL: Only log response data if verbose debug is enabled to prevent PII leaks
               logger.error(
                 "API error",
-                createResponseLogData(error.response, true)
+                createResponseLogData(error.response, clientConfig.debugVerbose)
               );
             } else {
               logger.error("Network error", { message: error.message });
             }
-            // Error is already converted by the error handling interceptor above
             return Promise.reject(error);
           }
         );
