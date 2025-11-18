@@ -46,8 +46,8 @@
     "prepublishOnly": "pnpm build",
     "pretest": "pnpm --silent build",
     "test": "jest",
-    "test:integration": "jest --testPathPattern=integration",
-    "test:unit": "jest --testPathPattern=unit",
+    "test:integration": "jest --testPathPatterns=integration",
+    "test:unit": "jest --testPathPatterns=unit",
     "test:watch": "jest --watch"
   },
   "dependencies": {
