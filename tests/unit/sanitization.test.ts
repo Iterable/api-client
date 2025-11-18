@@ -5,14 +5,13 @@ import axios from "axios";
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
+import { BaseIterableClient } from "../../src/client/base.js";
 // Import the real logger to spy on it
 import { logger } from "../../src/logger.js";
-import { BaseIterableClient } from "../../src/client/base.js";
 
 describe("Debug Logging Sanitization", () => {
   let mockClientInstance: any;
   let requestInterceptor: any;
-  let responseInterceptorSuccess: any;
   let responseInterceptorError: any;
   
   let debugSpy: any;
@@ -27,7 +26,6 @@ describe("Debug Logging Sanitization", () => {
     errorSpy = jest.spyOn(logger, "error").mockImplementation(() => logger);
 
     requestInterceptor = undefined;
-    responseInterceptorSuccess = undefined;
     responseInterceptorError = undefined;
 
     mockClientInstance = {
@@ -40,7 +38,6 @@ describe("Debug Logging Sanitization", () => {
         },
         response: {
           use: jest.fn((success, error) => {
-            responseInterceptorSuccess = success;
             responseInterceptorError = error;
             return 0;
           }),
@@ -102,59 +99,6 @@ describe("Debug Logging Sanitization", () => {
     );
   });
 
-  it("should redact sensitive query parameters in debug logs", () => {
-    new BaseIterableClient({
-      apiKey: "test-api-key",
-      debug: true,
-      baseUrl: "https://api.iterable.com",
-    });
-
-    if (!requestInterceptor) throw new Error("Request interceptor missing");
-
-    const requestConfig = {
-      method: "get",
-      url: "https://api.iterable.com/test?apiKey=secret-key&token=secret-token&safe=value",
-    };
-
-    requestInterceptor(requestConfig);
-
-    const logCall = debugSpy.mock.calls.find(
-      (call: any) => call[0] === "API request"
-    );
-    
-    const logData = logCall?.[1] as any;
-    const decodedUrl = decodeURIComponent(logData.url);
-    expect(decodedUrl).toContain("apiKey=[REDACTED]");
-    expect(decodedUrl).toContain("token=[REDACTED]");
-    expect(decodedUrl).toContain("safe=value");
-  });
-
-  it("should handle relative URLs in debug logs", () => {
-    new BaseIterableClient({
-      apiKey: "test-api-key",
-      debug: true,
-      baseUrl: "https://api.iterable.com",
-    });
-
-    if (!requestInterceptor) throw new Error("Request interceptor missing");
-
-    const requestConfig = {
-      method: "get",
-      url: "/test?apiKey=secret-key&token=secret-token",
-    };
-
-    requestInterceptor(requestConfig);
-
-    const logCall = debugSpy.mock.calls.find(
-      (call: any) => call[0] === "API request"
-    );
-    
-    const logData = logCall?.[1] as any;
-    const decodedUrl = decodeURIComponent(logData.url);
-    expect(decodedUrl).toContain("/test?apiKey=[REDACTED]&token=[REDACTED]");
-    expect(logData.url).not.toContain("https://");
-  });
-
   it("should NOT log error response data by default (debugVerbose=false)", async () => {
     new BaseIterableClient({
       apiKey: "test-api-key",
@@ -175,7 +119,7 @@ describe("Debug Logging Sanitization", () => {
 
     try {
       await responseInterceptorError(errorResponse);
-    } catch (e) {
+    } catch {
       // Expected
     }
 
@@ -214,7 +158,7 @@ describe("Debug Logging Sanitization", () => {
 
     try {
       await responseInterceptorError(errorResponse);
-    } catch (e) {
+    } catch {
       // Expected
     }
 

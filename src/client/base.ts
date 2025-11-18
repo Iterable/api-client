@@ -94,40 +94,10 @@ export class BaseIterableClient {
           return sanitized;
         };
 
-        const sanitizeUrl = (url?: string) => {
-          if (!url) return url;
-          try {
-            // Use the actual base URL for realistic parsing context
-            const baseUrl = clientConfig.baseUrl || "https://api.iterable.com";
-            const urlObj = new URL(url, baseUrl);
-            const sensitive = ["api_key", "apiKey", "token", "secret"];
-            
-            let modified = false;
-            sensitive.forEach(param => {
-              if (urlObj.searchParams.has(param)) {
-                urlObj.searchParams.set(param, "[REDACTED]");
-                modified = true;
-              }
-            });
-
-            if (!modified) return url;
-            
-            // If the input was an absolute URL, return the full sanitized URL
-            if (/^https?:\/\//i.test(url)) {
-              return urlObj.toString();
-            }
-            
-            // For relative URLs, return just the path and query components
-            return urlObj.pathname + urlObj.search;
-          } catch {
-            return url;
-          }
-        };
-
         this.client.interceptors.request.use((request) => {
           logger.debug("API request", {
             method: request.method?.toUpperCase(),
-            url: sanitizeUrl(request.url),
+            url: request.url,
             headers: sanitizeHeaders(request.headers),
           });
           return request;
@@ -135,7 +105,7 @@ export class BaseIterableClient {
 
         const createResponseLogData = (response: any, includeData = false) => ({
           status: response.status,
-          url: sanitizeUrl(response.config?.url),
+          url: response.config?.url,
           ...(includeData && { data: response.data }),
         });
 
