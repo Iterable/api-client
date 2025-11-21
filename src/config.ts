@@ -19,7 +19,11 @@ export const config = createEnv({
     // Logging Configuration
     LOG_LEVEL: z
       .enum(["error", "warn", "info", "http", "verbose", "debug", "silly"])
-      .default(process.env.NODE_ENV === "production" ? "info" : "debug"),
+      .default(
+        !process.env.NODE_ENV || process.env.NODE_ENV === "production"
+          ? "info"
+          : "debug"
+      ),
     LOG_JSON: z.coerce.boolean().default(process.env.NODE_ENV === "production"),
     LOG_FILE: z.string().optional(),
     LOG_STDERR: z.coerce.boolean().default(true),
