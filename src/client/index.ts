@@ -1,3 +1,6 @@
+import type { AxiosInstance } from "axios";
+
+import type { IterableConfig } from "../types/common.js";
 import { BaseIterableClient } from "./base.js";
 import { Campaigns } from "./campaigns.js";
 import { Catalogs } from "./catalogs.js";
@@ -62,4 +65,14 @@ export class IterableClient extends compose(
   Templates,
   Users,
   Webhooks
-) {}
+) {
+  /**
+   * Create a new Iterable API client
+   *
+   * @param config - Optional configuration object. If not provided, will use environment variables
+   * @param injectedClient - Optional pre-configured Axios instance for testing
+   */
+  constructor(config?: IterableConfig, injectedClient?: AxiosInstance) {
+    super(config, injectedClient);
+  }
+}
