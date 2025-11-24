@@ -13,13 +13,13 @@ describe("Debug Logging Sanitization", () => {
   let mockClientInstance: any;
   let requestInterceptor: any;
   let responseInterceptorError: any;
-  
+
   let debugSpy: any;
   let errorSpy: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Spy on logger methods
     // We use mockImplementation to silence the console output during tests
     debugSpy = jest.spyOn(logger, "debug").mockImplementation(() => logger);
@@ -48,15 +48,18 @@ describe("Debug Logging Sanitization", () => {
     };
 
     if (jest.isMockFunction(mockedAxios.create)) {
-        mockedAxios.create.mockReturnValue(mockClientInstance);
+      mockedAxios.create.mockReturnValue(mockClientInstance);
     } else {
-        (mockedAxios as any).create = jest.fn().mockReturnValue(mockClientInstance);
+      (mockedAxios as any).create = jest
+        .fn()
+        .mockReturnValue(mockClientInstance);
     }
   });
 
   it("should call axios.create and register interceptors", () => {
     new BaseIterableClient({
       apiKey: "test-api-key",
+      baseUrl: "https://api.iterable.com",
       debug: true,
     });
 
@@ -68,6 +71,7 @@ describe("Debug Logging Sanitization", () => {
   it("should redact sensitive headers in debug logs", () => {
     new BaseIterableClient({
       apiKey: "test-api-key",
+      baseUrl: "https://api.iterable.com",
       debug: true,
     });
 
@@ -78,7 +82,7 @@ describe("Debug Logging Sanitization", () => {
       url: "/test",
       headers: {
         Authorization: "Bearer secret-token",
-        "Cookie": "session=secret",
+        Cookie: "session=secret",
         "X-Custom": "safe",
         "Api-Key": "real-api-key",
       },
@@ -102,11 +106,13 @@ describe("Debug Logging Sanitization", () => {
   it("should NOT log error response data by default (debugVerbose=false)", async () => {
     new BaseIterableClient({
       apiKey: "test-api-key",
+      baseUrl: "https://api.iterable.com",
       debug: true,
       debugVerbose: false,
     });
 
-    if (!responseInterceptorError) throw new Error("Response interceptor missing");
+    if (!responseInterceptorError)
+      throw new Error("Response interceptor missing");
 
     const sensitiveError = { message: "User email@example.com not found" };
     const errorResponse = {
@@ -134,18 +140,20 @@ describe("Debug Logging Sanitization", () => {
       (call: any) => call[0] === "API error"
     );
     const errorData = errorLog?.[1] as any;
-    
+
     expect(errorData.data).toBeUndefined();
   });
 
   it("should log error response data when debugVerbose is true", async () => {
     new BaseIterableClient({
       apiKey: "test-api-key",
+      baseUrl: "https://api.iterable.com",
       debug: true,
       debugVerbose: true,
     });
 
-    if (!responseInterceptorError) throw new Error("Response interceptor missing");
+    if (!responseInterceptorError)
+      throw new Error("Response interceptor missing");
 
     const errorBody = { error: "details" };
     const errorResponse = {

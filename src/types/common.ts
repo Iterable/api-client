@@ -107,7 +107,7 @@ export type IterableErrorResponse = z.infer<typeof IterableErrorResponseSchema>;
 
 export const IterableConfigSchema = z.object({
   apiKey: z.string(),
-  baseUrl: z.string().optional(),
+  baseUrl: z.url(),
   timeout: z.number().optional(),
   debug: z.boolean().optional(),
   debugVerbose: z.boolean().optional(),

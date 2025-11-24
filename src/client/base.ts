@@ -58,7 +58,7 @@ export class BaseIterableClient {
       };
 
       this.client = axios.create({
-        baseURL: clientConfig.baseUrl || "https://api.iterable.com",
+        baseURL: clientConfig.baseUrl,
         headers: {
           ...defaultHeaders,
           ...(clientConfig.customHeaders || {}),
@@ -84,7 +84,12 @@ export class BaseIterableClient {
       if (clientConfig.debug) {
         const sanitizeHeaders = (headers: any) => {
           if (!headers) return undefined;
-          const sensitive = ["api-key", "authorization", "cookie", "set-cookie"];
+          const sensitive = [
+            "api-key",
+            "authorization",
+            "cookie",
+            "set-cookie",
+          ];
           const sanitized = { ...headers };
           Object.keys(sanitized).forEach((key) => {
             if (sensitive.includes(key.toLowerCase())) {

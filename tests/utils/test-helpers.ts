@@ -40,10 +40,15 @@ export function createMockClient(): {
     delete: jest.fn(),
     put: jest.fn(),
     patch: jest.fn(),
+    defaults: {},
+    interceptors: {
+      request: { use: jest.fn(), eject: jest.fn(), clear: jest.fn() },
+      response: { use: jest.fn(), eject: jest.fn(), clear: jest.fn() },
+    },
   };
   const client = new IterableClient(
     { apiKey: "test", baseUrl: "https://api.iterable.com" },
-    mockAxiosInstance
+    mockAxiosInstance as any
   );
   return { client, mockAxiosInstance };
 }
