@@ -352,6 +352,121 @@ export const SendInAppParamsSchema = z
   );
 
 // Embedded messaging schemas
+export const ActionSchema = z.object({
+  type: z
+    .string()
+    .describe(
+      "For URL actions, this field is 'openUrl'. For custom actions, it's the full URL of the custom action."
+    ),
+  data: z
+    .string()
+    .describe(
+      "For URL actions, this field is a full URL. For custom actions, it's an empty string."
+    ),
+});
+
+export const ButtonSchema = z.object({
+  id: z.string().optional().describe("ID of the button."),
+  title: z.string().optional().describe("Text to display on the button."),
+  action: ActionSchema.optional().describe(
+    "Action to invoke when a user taps the button."
+  ),
+});
+
+export const TextSchema = z.object({
+  id: z
+    .string()
+    .optional()
+    .describe("Deprecated field. Do not use. Use label as a key."),
+  label: z
+    .string()
+    .optional()
+    .describe(
+      "Identifier for the text field, specified by the user who created its associated placement. This field is a key, not content. Do not display it."
+    ),
+  text: z.string().optional().describe("Text to display."),
+});
+
+export const ApiEmbeddedMessagingElementsSchema = z.object({
+  title: z.string().optional().describe("Title text of the embedded message."),
+  body: z.string().optional().describe("Body text of the embedded message."),
+  mediaUrl: z
+    .string()
+    .optional()
+    .describe("Image URL associated with the embedded message."),
+  mediaUrlCaption: z
+    .string()
+    .optional()
+    .describe("Alt text for the image specified by mediaUrl."),
+  text: z
+    .array(TextSchema)
+    .optional()
+    .describe(
+      "Text fields (other than title and body) to display with the embedded message."
+    ),
+  buttons: z
+    .array(ButtonSchema)
+    .optional()
+    .describe("Buttons to display with the embedded message."),
+  defaultAction: ActionSchema.optional().describe(
+    "Action to invoke when a user taps or clicks on the embedded message (but not on a button or link)."
+  ),
+});
+
+export const ApiEmbeddedMessagingMetadataSchema = z.object({
+  messageId: z
+    .string()
+    .optional()
+    .describe(
+      "ID associated with the specific send of a specific campaign to a specific user."
+    ),
+  campaignId: z
+    .number()
+    .optional()
+    .describe(
+      "ID of the Iterable campaign associated with the embedded message."
+    ),
+  placementId: z
+    .number()
+    .optional()
+    .describe("ID of the placement to which the embedded message belongs."),
+  isProof: z
+    .boolean()
+    .optional()
+    .describe("Whether or not the campaign is a test message (proof)."),
+  priorityOrder: z
+    .number()
+    .optional()
+    .describe(
+      "Numeric priority, as compared to other embedded campaigns in the same placement. Lower numbers mean higher priority. Highest priority is 1."
+    ),
+});
+
+export const ApiEmbeddedMessageSchema = z.object({
+  metadata: ApiEmbeddedMessagingMetadataSchema.optional().describe(
+    "Identifying information about the embedded message."
+  ),
+  elements: ApiEmbeddedMessagingElementsSchema.optional().describe(
+    "Content to display in the message, and actions to invoke on click or tap."
+  ),
+  payload: z
+    .record(z.string(), z.unknown())
+    .optional()
+    .describe(
+      "Custom JSON data. Use to customize the message display or trigger custom behavior."
+    ),
+});
+
+export const ApiEmbeddedPlacementSchema = z.object({
+  placementId: z.number().optional().describe("ID of a placement."),
+  embeddedMessages: z
+    .array(ApiEmbeddedMessageSchema)
+    .optional()
+    .describe(
+      "Array of embedded messages associated with placementId. The user specified in the request is eligible for all messages in this array."
+    ),
+});
+
 export const GetEmbeddedMessagesParamsSchema = z
   .object({
     email: z.email().optional().describe("User email address"),
@@ -389,7 +504,7 @@ export const ApiInAppMessagesResponseSchema = z.object({
 });
 
 export const EmbeddedMessagesResponseSchema = z.object({
-  placements: z.record(z.string(), z.any()), // Grouped by placementId with complex structure
+  placements: z.array(ApiEmbeddedPlacementSchema), // API returns array of placement objects
 });
 
 // Type exports
@@ -425,3 +540,14 @@ export type ApiInAppMessagesResponse = z.infer<
 export type EmbeddedMessagesResponse = z.infer<
   typeof EmbeddedMessagesResponseSchema
 >;
+export type Action = z.infer<typeof ActionSchema>;
+export type Button = z.infer<typeof ButtonSchema>;
+export type Text = z.infer<typeof TextSchema>;
+export type ApiEmbeddedMessagingElements = z.infer<
+  typeof ApiEmbeddedMessagingElementsSchema
+>;
+export type ApiEmbeddedMessagingMetadata = z.infer<
+  typeof ApiEmbeddedMessagingMetadataSchema
+>;
+export type ApiEmbeddedMessage = z.infer<typeof ApiEmbeddedMessageSchema>;
+export type ApiEmbeddedPlacement = z.infer<typeof ApiEmbeddedPlacementSchema>;

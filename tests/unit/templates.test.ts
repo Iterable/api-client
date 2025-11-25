@@ -18,11 +18,7 @@ import {
   UpdateEmailTemplateParamsSchema,
   UpsertEmailTemplateParamsSchema,
 } from "../../src/types/templates.js";
-import {
-  createMockClient,
-  createMockIterableResponse,
-  createMockTemplate,
-} from "../utils/test-helpers";
+import { createMockClient, createMockTemplate } from "../utils/test-helpers";
 
 describe("Template Management", () => {
   let client: IterableClient;
@@ -313,7 +309,8 @@ describe("Template Management", () => {
 
     describe("Template proof schema validation", () => {
       it("should validate proof request with email", () => {
-        const result = SendTemplateProofParamsSchema.safeParse(mockProofRequest);
+        const result =
+          SendTemplateProofParamsSchema.safeParse(mockProofRequest);
         expect(result.success).toBe(true);
       });
 
@@ -323,7 +320,8 @@ describe("Template Management", () => {
           recipientUserId: "user123",
           dataFields: { firstName: "Test" },
         };
-        const result = SendTemplateProofParamsSchema.safeParse(requestWithUserId);
+        const result =
+          SendTemplateProofParamsSchema.safeParse(requestWithUserId);
         expect(result.success).toBe(true);
       });
 
