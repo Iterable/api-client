@@ -18,11 +18,7 @@ import {
   UpdateEmailTemplateParamsSchema,
   UpsertEmailTemplateParamsSchema,
 } from "../../src/types/templates.js";
-import {
-  createMockClient,
-  createMockIterableResponse,
-  createMockTemplate,
-} from "../utils/test-helpers";
+import { createMockClient, createMockTemplate } from "../utils/test-helpers";
 
 describe("Template Management", () => {
   let client: IterableClient;
@@ -99,39 +95,39 @@ describe("Template Management", () => {
     });
   });
 
-  describe("deleteTemplates", () => {
-    it("should delete templates", async () => {
-      const templateIds = [12345, 67890];
+  describe("bulkDeleteTemplates", () => {
+    it("should bulk delete multiple templates", async () => {
+      const templateIds = [67890, 67891, 67892];
       const mockResponse = {
         data: {
           success: templateIds,
           failed: [],
-          failureReason: "",
         },
       };
       mockAxiosInstance.post.mockResolvedValue(mockResponse);
 
-      const result = await client.deleteTemplates(templateIds);
+      const result = await client.bulkDeleteTemplates({ ids: templateIds });
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         "/api/templates/bulkDelete",
         { ids: templateIds }
       );
-      expect(result).toEqual({
-        success: templateIds,
-        failed: [],
-        failureReason: "",
-      });
+      expect(result).toEqual(mockResponse.data);
     });
   });
 
-  describe("bulkDeleteTemplates", () => {
-    it("should bulk delete multiple templates", async () => {
-      const templateIds = [67890, 67891, 67892];
-      const mockResponse = { data: createMockIterableResponse() };
+  describe("deleteTemplates (deprecated)", () => {
+    it("should delete templates using bulkDeleteTemplates under the hood", async () => {
+      const templateIds = [12345, 12346];
+      const mockResponse = {
+        data: {
+          success: templateIds,
+          failed: [],
+        },
+      };
       mockAxiosInstance.post.mockResolvedValue(mockResponse);
 
-      const result = await client.bulkDeleteTemplates({ ids: templateIds });
+      const result = await client.deleteTemplates(templateIds);
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         "/api/templates/bulkDelete",
@@ -313,7 +309,8 @@ describe("Template Management", () => {
 
     describe("Template proof schema validation", () => {
       it("should validate proof request with email", () => {
-        const result = SendTemplateProofParamsSchema.safeParse(mockProofRequest);
+        const result =
+          SendTemplateProofParamsSchema.safeParse(mockProofRequest);
         expect(result.success).toBe(true);
       });
 
@@ -323,7 +320,8 @@ describe("Template Management", () => {
           recipientUserId: "user123",
           dataFields: { firstName: "Test" },
         };
-        const result = SendTemplateProofParamsSchema.safeParse(requestWithUserId);
+        const result =
+          SendTemplateProofParamsSchema.safeParse(requestWithUserId);
         expect(result.success).toBe(true);
       });
 

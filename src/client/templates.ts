@@ -79,16 +79,6 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
       return this.validateResponse(response, IterableSuccessResponseSchema);
     }
 
-    // Template deletion - works for all template types
-    async deleteTemplates(
-      templateIds: number[]
-    ): Promise<BulkDeleteTemplatesResponse> {
-      const response = await this.client.post(`/api/templates/bulkDelete`, {
-        ids: templateIds,
-      });
-      return this.validateResponse(response, BulkDeleteTemplatesResponseSchema);
-    }
-
     async #sendTemplateProof(
       pathSegment: string,
       request: SendTemplateProofParams
@@ -155,12 +145,22 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
 
     async bulkDeleteTemplates(
       params: BulkDeleteTemplatesParams
-    ): Promise<IterableSuccessResponse> {
+    ): Promise<BulkDeleteTemplatesResponse> {
       const response = await this.client.post(
         `/api/templates/bulkDelete`,
         params
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return this.validateResponse(response, BulkDeleteTemplatesResponseSchema);
+    }
+
+    /**
+     * Delete one or more templates by ID
+     * @deprecated Use {@link bulkDeleteTemplates} instead
+     */
+    async deleteTemplates(
+      templateIds: number[]
+    ): Promise<BulkDeleteTemplatesResponse> {
+      return this.bulkDeleteTemplates({ ids: templateIds });
     }
 
     // Email Template Management

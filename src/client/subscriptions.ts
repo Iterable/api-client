@@ -1,4 +1,7 @@
-import { IterableSuccessResponse } from "../types/common.js";
+import {
+  IterableSuccessResponse,
+  IterableSuccessResponseSchema,
+} from "../types/common.js";
 import {
   BulkUpdateSubscriptionsParams,
   SubscribeUserByEmailParams,
@@ -6,8 +9,7 @@ import {
   UnsubscribeUserByEmailParams,
   UnsubscribeUserByUserIdParams,
 } from "../types/subscriptions.js";
-import type { Constructor } from "./base.js";
-import type { BaseIterableClient } from "./base.js";
+import type { BaseIterableClient, Constructor } from "./base.js";
 
 export function Subscriptions<T extends Constructor<BaseIterableClient>>(
   Base: T
@@ -30,7 +32,7 @@ export function Subscriptions<T extends Constructor<BaseIterableClient>>(
         `/api/subscriptions/${encodeURIComponent(subscriptionGroup)}/${subscriptionGroupId}?action=${action}`,
         requestBody
       );
-      return response.data;
+      return this.validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async subscribeUserByEmail(
@@ -41,7 +43,7 @@ export function Subscriptions<T extends Constructor<BaseIterableClient>>(
       const response = await this.client.patch(
         `/api/subscriptions/${encodeURIComponent(subscriptionGroup)}/${subscriptionGroupId}/user/${encodeURIComponent(userEmail)}`
       );
-      return response.data;
+      return this.validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async subscribeUserByUserId(
@@ -52,7 +54,7 @@ export function Subscriptions<T extends Constructor<BaseIterableClient>>(
       const response = await this.client.patch(
         `/api/subscriptions/${encodeURIComponent(subscriptionGroup)}/${subscriptionGroupId}/byUserId/${encodeURIComponent(userId)}`
       );
-      return response.data;
+      return this.validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async unsubscribeUserByEmail(
@@ -63,7 +65,7 @@ export function Subscriptions<T extends Constructor<BaseIterableClient>>(
       const response = await this.client.delete(
         `/api/subscriptions/${encodeURIComponent(subscriptionGroup)}/${subscriptionGroupId}/user/${encodeURIComponent(userEmail)}`
       );
-      return response.data;
+      return this.validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async unsubscribeUserByUserId(
@@ -74,7 +76,7 @@ export function Subscriptions<T extends Constructor<BaseIterableClient>>(
       const response = await this.client.delete(
         `/api/subscriptions/${encodeURIComponent(subscriptionGroup)}/${subscriptionGroupId}/byUserId/${encodeURIComponent(userId)}`
       );
-      return response.data;
+      return this.validateResponse(response, IterableSuccessResponseSchema);
     }
   };
 }

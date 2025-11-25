@@ -287,7 +287,7 @@ export async function waitForUserUpdate(
   return retryWithBackoff(
     async () => {
       const userResponse = await client.getUserByEmail(email);
-      const actualDataFields = userResponse.user.dataFields || {};
+      const actualDataFields = userResponse.user?.dataFields || {};
       const missingFields = Object.entries(expectedDataFields).filter(
         ([key, expectedValue]) => actualDataFields[key] !== expectedValue
       );

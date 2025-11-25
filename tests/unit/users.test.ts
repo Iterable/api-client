@@ -57,8 +57,8 @@ describe("User Management", () => {
 
       const result = await client.getUserByEmail(TEST_USER_EMAIL);
 
-      expect(result.user.email).toBe(TEST_USER_EMAIL);
-      expect(result.user.userId).toBe("user123");
+      expect(result.user?.email).toBe(TEST_USER_EMAIL);
+      expect(result.user?.userId).toBe("user123");
     });
   });
 

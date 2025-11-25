@@ -140,6 +140,19 @@ describe("Snippets Management", () => {
       );
     });
 
+    it("should URL-encode special characters in identifier", async () => {
+      const mockSnippet = createMockSnippet();
+      const mockResponse = { data: { snippet: mockSnippet } };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      await client.getSnippet({ identifier: "test snippet/with special&chars" });
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+        "/api/snippets/test%20snippet%2Fwith%20special%26chars",
+        { signal: undefined }
+      );
+    });
+
     it("should return snippet details", async () => {
       const mockSnippet = createMockSnippet();
       const mockResponse = { data: { snippet: mockSnippet } };

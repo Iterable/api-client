@@ -19,12 +19,14 @@ export type UserProfile = z.infer<typeof UserProfileSchema>;
 export type UpdateUserParams = z.infer<typeof UpdateUserParamsSchema>;
 
 export const UserResponseSchema = z.object({
-  user: z.object({
-    email: z.string(),
-    userId: z.string().optional(),
-    dataFields: z.record(z.string(), z.any()).optional(),
-    profileUpdatedAt: z.string().optional(),
-  }),
+  user: z
+    .object({
+      email: z.string(),
+      userId: z.string().optional(),
+      dataFields: z.record(z.string(), z.any()).optional(),
+      profileUpdatedAt: z.string().optional(),
+    })
+    .optional(), // user field is undefined when user not found
 });
 
 export type UserResponse = z.infer<typeof UserResponseSchema>;
