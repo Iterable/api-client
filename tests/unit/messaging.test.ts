@@ -143,11 +143,24 @@ describe("Messaging Operations", () => {
       it("should get embedded messages with all parameters", async () => {
         const mockResponse = {
           data: {
-            placements: {
-              placement1: {
-                messages: [{ messageId: "embedded123" }],
+            placements: [
+              {
+                placementId: 123,
+                embeddedMessages: [
+                  {
+                    metadata: {
+                      messageId: "embedded123",
+                      campaignId: 456,
+                      placementId: 123,
+                    },
+                    elements: {
+                      title: "Test Message",
+                      body: "Test Body",
+                    },
+                  },
+                ],
               },
-            },
+            ],
           },
         };
         mockAxiosInstance.get.mockResolvedValue(mockResponse);
@@ -170,7 +183,7 @@ describe("Messaging Operations", () => {
       it("should get embedded messages with minimal parameters", async () => {
         const mockResponse = {
           data: {
-            placements: {},
+            placements: [],
           },
         };
         mockAxiosInstance.get.mockResolvedValue(mockResponse);
