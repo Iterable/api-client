@@ -13,8 +13,8 @@ import {
   EmailTemplateSchema,
   InAppTemplateSchema,
   PushTemplateSchema,
+  SendTemplateProofParamsSchema,
   SMSTemplateSchema,
-  TemplateProofRequestSchema,
   UpdateEmailTemplateParamsSchema,
   UpsertEmailTemplateParamsSchema,
 } from "../../src/types/templates.js";
@@ -313,7 +313,7 @@ describe("Template Management", () => {
 
     describe("Template proof schema validation", () => {
       it("should validate proof request with email", () => {
-        const result = TemplateProofRequestSchema.safeParse(mockProofRequest);
+        const result = SendTemplateProofParamsSchema.safeParse(mockProofRequest);
         expect(result.success).toBe(true);
       });
 
@@ -323,7 +323,7 @@ describe("Template Management", () => {
           recipientUserId: "user123",
           dataFields: { firstName: "Test" },
         };
-        const result = TemplateProofRequestSchema.safeParse(requestWithUserId);
+        const result = SendTemplateProofParamsSchema.safeParse(requestWithUserId);
         expect(result.success).toBe(true);
       });
 
@@ -332,7 +332,7 @@ describe("Template Management", () => {
           templateId: 12345,
           dataFields: { firstName: "Test" },
         };
-        const result = TemplateProofRequestSchema.safeParse(invalidRequest);
+        const result = SendTemplateProofParamsSchema.safeParse(invalidRequest);
         expect(result.success).toBe(false);
       });
 
@@ -340,7 +340,7 @@ describe("Template Management", () => {
         const invalidRequest = {
           recipientEmail: "test@example.com",
         };
-        const result = TemplateProofRequestSchema.safeParse(invalidRequest);
+        const result = SendTemplateProofParamsSchema.safeParse(invalidRequest);
         expect(result.success).toBe(false);
       });
     });

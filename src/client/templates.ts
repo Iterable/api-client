@@ -19,9 +19,9 @@ import {
   PreviewTemplateParams,
   PushTemplate,
   PushTemplateSchema,
+  SendTemplateProofParams,
   SMSTemplate,
   SMSTemplateSchema,
-  TemplateProofRequest,
   UpdateEmailTemplateParams,
   UpdateInAppTemplateParams,
   UpdatePushTemplateParams,
@@ -91,7 +91,7 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
 
     async #sendTemplateProof(
       pathSegment: string,
-      request: TemplateProofRequest
+      request: SendTemplateProofParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post(
         `/api/templates/${pathSegment}/proof`,
@@ -181,7 +181,7 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
     }
 
     async sendEmailTemplateProof(
-      request: TemplateProofRequest
+      request: SendTemplateProofParams
     ): Promise<IterableSuccessResponse> {
       return this.#sendTemplateProof("email", request);
     }
@@ -208,7 +208,7 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
     }
 
     async sendSMSTemplateProof(
-      request: TemplateProofRequest
+      request: SendTemplateProofParams
     ): Promise<IterableSuccessResponse> {
       return this.#sendTemplateProof("sms", request);
     }
@@ -231,7 +231,7 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
     }
 
     async sendPushTemplateProof(
-      request: TemplateProofRequest
+      request: SendTemplateProofParams
     ): Promise<IterableSuccessResponse> {
       return this.#sendTemplateProof("push", request);
     }
@@ -254,7 +254,7 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
     }
 
     async sendInAppTemplateProof(
-      request: TemplateProofRequest
+      request: SendTemplateProofParams
     ): Promise<IterableSuccessResponse> {
       return this.#sendTemplateProof("inapp", request);
     }

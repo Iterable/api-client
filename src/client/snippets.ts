@@ -1,5 +1,5 @@
 import {
-  CreateSnippetRequest,
+  CreateSnippetParams,
   CreateSnippetResponse,
   CreateSnippetResponseSchema,
   DeleteSnippetParams,
@@ -11,7 +11,6 @@ import {
   GetSnippetsResponse,
   GetSnippetsResponseSchema,
   UpdateSnippetParams,
-  UpdateSnippetRequest,
   UpdateSnippetResponse,
   UpdateSnippetResponseSchema,
 } from "../types/snippets.js";
@@ -33,7 +32,7 @@ export function Snippets<T extends Constructor<BaseIterableClient>>(Base: T) {
     }
 
     async createSnippet(
-      params: CreateSnippetRequest,
+      params: CreateSnippetParams,
       opts?: { signal?: AbortSignal }
     ): Promise<CreateSnippetResponse> {
       const response = await this.client.post("/api/snippets", params, opts);
@@ -53,11 +52,11 @@ export function Snippets<T extends Constructor<BaseIterableClient>>(Base: T) {
 
     async updateSnippet(
       params: UpdateSnippetParams,
-      body: UpdateSnippetRequest,
       opts?: { signal?: AbortSignal }
     ): Promise<UpdateSnippetResponse> {
+      const { identifier, ...body } = params;
       const response = await this.client.put(
-        `/api/snippets/${params.identifier}`,
+        `/api/snippets/${identifier}`,
         body,
         opts
       );

@@ -459,7 +459,7 @@ export type BulkDeleteTemplatesResponse = z.infer<
 >;
 
 // Template proof schemas
-export const TemplateProofRequestSchema = z
+export const SendTemplateProofParamsSchema = z
   .object({
     templateId: z.number().describe("Template ID to send proof for"),
     recipientEmail: z
@@ -490,7 +490,9 @@ export const TemplateProofRequestSchema = z
     path: ["recipientEmail", "recipientUserId"],
   });
 
-export type TemplateProofRequest = z.infer<typeof TemplateProofRequestSchema>;
+export type SendTemplateProofParams = z.infer<
+  typeof SendTemplateProofParamsSchema
+>;
 
 // Template preview schemas
 export const TemplatePreviewRequestSchema = z.object({
