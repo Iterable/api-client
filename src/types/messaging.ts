@@ -387,7 +387,7 @@ export const TextSchema = z.object({
   text: z.string().optional().describe("Text to display."),
 });
 
-export const ApiEmbeddedMessagingElementsSchema = z.object({
+export const EmbeddedMessagingElementsSchema = z.object({
   title: z.string().optional().describe("Title text of the embedded message."),
   body: z.string().optional().describe("Body text of the embedded message."),
   mediaUrl: z
@@ -413,7 +413,7 @@ export const ApiEmbeddedMessagingElementsSchema = z.object({
   ),
 });
 
-export const ApiEmbeddedMessagingMetadataSchema = z.object({
+export const EmbeddedMessagingMetadataSchema = z.object({
   messageId: z
     .string()
     .optional()
@@ -442,11 +442,11 @@ export const ApiEmbeddedMessagingMetadataSchema = z.object({
     ),
 });
 
-export const ApiEmbeddedMessageSchema = z.object({
-  metadata: ApiEmbeddedMessagingMetadataSchema.optional().describe(
+export const EmbeddedMessageSchema = z.object({
+  metadata: EmbeddedMessagingMetadataSchema.optional().describe(
     "Identifying information about the embedded message."
   ),
-  elements: ApiEmbeddedMessagingElementsSchema.optional().describe(
+  elements: EmbeddedMessagingElementsSchema.optional().describe(
     "Content to display in the message, and actions to invoke on click or tap."
   ),
   payload: z
@@ -457,10 +457,10 @@ export const ApiEmbeddedMessageSchema = z.object({
     ),
 });
 
-export const ApiEmbeddedPlacementSchema = z.object({
+export const EmbeddedPlacementSchema = z.object({
   placementId: z.number().optional().describe("ID of a placement."),
   embeddedMessages: z
-    .array(ApiEmbeddedMessageSchema)
+    .array(EmbeddedMessageSchema)
     .optional()
     .describe(
       "Array of embedded messages associated with placementId. The user specified in the request is eligible for all messages in this array."
@@ -504,7 +504,7 @@ export const ApiInAppMessagesResponseSchema = z.object({
 });
 
 export const EmbeddedMessagesResponseSchema = z.object({
-  placements: z.array(ApiEmbeddedPlacementSchema), // API returns array of placement objects
+  placements: z.array(EmbeddedPlacementSchema), // API returns array of placement objects
 });
 
 // Type exports
@@ -543,11 +543,11 @@ export type EmbeddedMessagesResponse = z.infer<
 export type Action = z.infer<typeof ActionSchema>;
 export type Button = z.infer<typeof ButtonSchema>;
 export type Text = z.infer<typeof TextSchema>;
-export type ApiEmbeddedMessagingElements = z.infer<
-  typeof ApiEmbeddedMessagingElementsSchema
+export type EmbeddedMessagingElements = z.infer<
+  typeof EmbeddedMessagingElementsSchema
 >;
-export type ApiEmbeddedMessagingMetadata = z.infer<
-  typeof ApiEmbeddedMessagingMetadataSchema
+export type EmbeddedMessagingMetadata = z.infer<
+  typeof EmbeddedMessagingMetadataSchema
 >;
-export type ApiEmbeddedMessage = z.infer<typeof ApiEmbeddedMessageSchema>;
-export type ApiEmbeddedPlacement = z.infer<typeof ApiEmbeddedPlacementSchema>;
+export type EmbeddedMessage = z.infer<typeof EmbeddedMessageSchema>;
+export type EmbeddedPlacement = z.infer<typeof EmbeddedPlacementSchema>;
