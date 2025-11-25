@@ -8,8 +8,10 @@ import {
   CreateListResponseSchema,
   GetListPreviewUsersParams,
   GetListPreviewUsersResponse,
+  GetListPreviewUsersResponseSchema,
   GetListSizeParams,
   GetListSizeResponse,
+  GetListSizeResponseSchema,
   GetListsResponse,
   GetListsResponseSchema,
   GetListUsersParams,
@@ -70,9 +72,14 @@ export function Lists<T extends Constructor<BaseIterableClient>>(Base: T) {
           .trim()
           .split("\n")
           .filter((email) => email.trim());
-        return {
+        const result = {
           users: emails.map((email) => ({ email: email.trim() })),
         };
+        // Validate the constructed response
+        return this.validateResponse(
+          { data: result },
+          GetListUsersResponseSchema
+        );
       }
 
       // Fallback to original format if it's already JSON
@@ -96,9 +103,12 @@ export function Lists<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/lists/${params.listId}/size`
       );
-      // API returns a string, but we want to return a proper object
+      // API returns a string number, convert to proper object and validate
       const size = parseInt(response.data, 10);
-      return { size };
+      return this.validateResponse(
+        { data: { size } },
+        GetListSizeResponseSchema
+      );
     }
 
     /**
@@ -120,13 +130,22 @@ export function Lists<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/lists/previewUsers?${queryParams.toString()}`
       );
+
       // API returns plain text with users separated by newlines
-      const usersText = response.data as string;
-      const users = usersText
-        .trim()
-        .split("\n")
-        .filter((user) => user.length > 0);
-      return { users };
+      const responseData = response.data;
+      if (typeof responseData === "string") {
+        const users = responseData
+          .trim()
+          .split("\n")
+          .filter((user) => user.length > 0);
+        return this.validateResponse(
+          { data: { users } },
+          GetListPreviewUsersResponseSchema
+        );
+      }
+
+      // Fallback to JSON validation if response is not plain text
+      return this.validateResponse(response, GetListPreviewUsersResponseSchema);
     }
   };
 }

@@ -29,7 +29,9 @@ import type { BaseIterableClient } from "./base.js";
 export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
   return class extends Base {
     async createCatalog(catalogName: string): Promise<IterableSuccessResponse> {
-      const response = await this.client.post(`/api/catalogs/${catalogName}`);
+      const response = await this.client.post(
+        `/api/catalogs/${encodeURIComponent(catalogName)}`
+      );
       return this.validateResponse(response, IterableSuccessResponseSchema);
     }
 
@@ -51,7 +53,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       });
 
       const response = await this.client.post(
-        `/api/catalogs/${options.catalogName}/items`,
+        `/api/catalogs/${encodeURIComponent(options.catalogName)}/items`,
         {
           documents,
           replaceUploadedFieldsOnly: false,
@@ -65,7 +67,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       itemId: string
     ): Promise<CatalogItemWithProperties> {
       const response = await this.client.get(
-        `/api/catalogs/${catalogName}/items/${itemId}`
+        `/api/catalogs/${encodeURIComponent(catalogName)}/items/${encodeURIComponent(itemId)}`
       );
       return this.validateResponse(response, CatalogItemWithPropertiesSchema);
     }
@@ -75,7 +77,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       itemId: string
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.delete(
-        `/api/catalogs/${catalogName}/items/${itemId}`
+        `/api/catalogs/${encodeURIComponent(catalogName)}/items/${encodeURIComponent(itemId)}`
       );
       return this.validateResponse(response, IterableSuccessResponseSchema);
     }
@@ -118,10 +120,13 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       );
       // The API returns { msg, code, params: { definedMappings, undefinedFields } }
       // Extract params and validate that directly
-      return this.validateResponse(
-        { data: response.data.params },
-        CatalogFieldMappingsResponseSchema
-      );
+      if (response.data && response.data.params) {
+        return this.validateResponse(
+          { data: response.data.params },
+          CatalogFieldMappingsResponseSchema
+        );
+      }
+      return this.validateResponse(response, CatalogFieldMappingsResponseSchema);
     }
 
     /**
@@ -151,10 +156,13 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(url);
       // The API returns { msg, code, params: { catalogItemsWithProperties, totalItemsCount } }
       // Extract params and validate that directly
-      return this.validateResponse(
-        { data: response.data.params },
-        GetCatalogItemsResponseSchema
-      );
+      if (response.data && response.data.params) {
+        return this.validateResponse(
+          { data: response.data.params },
+          GetCatalogItemsResponseSchema
+        );
+      }
+      return this.validateResponse(response, GetCatalogItemsResponseSchema);
     }
 
     /**

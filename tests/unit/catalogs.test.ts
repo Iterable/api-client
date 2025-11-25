@@ -28,6 +28,140 @@ describe("Catalog Operations", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
+
+  describe("createCatalog", () => {
+    it("should create catalog with correct endpoint", async () => {
+      const mockResponse = {
+        data: {
+          msg: "Catalog created successfully",
+          code: "Success",
+        },
+      };
+      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+
+      const result = await client.createCatalog("test-catalog");
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/catalogs/test-catalog"
+      );
+      expect(result).toEqual(mockResponse.data);
+    });
+
+    it("should encode catalog name with special characters", async () => {
+      const mockResponse = {
+        data: {
+          msg: "Catalog created successfully",
+          code: "Success",
+        },
+      };
+      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+
+      await client.createCatalog("test catalog/with+special");
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/catalogs/test%20catalog%2Fwith%2Bspecial"
+      );
+    });
+  });
+
+  describe("updateCatalogItems", () => {
+    it("should encode catalog name with special characters", async () => {
+      const mockResponse = {
+        data: {
+          msg: "Items updated",
+          code: "Success",
+        },
+      };
+      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+
+      await client.updateCatalogItems({
+        catalogName: "my catalog",
+        items: [{ id: "item1", name: "Test" }],
+      });
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/catalogs/my%20catalog/items",
+        expect.any(Object)
+      );
+    });
+  });
+
+  describe("getCatalogItem", () => {
+    it("should get item with correct endpoint", async () => {
+      const mockResponse = {
+        data: {
+          catalogName: "products",
+          itemId: "item1",
+          lastModified: 1704067200000,
+          size: 1024,
+          value: { name: "Product 1" },
+        },
+      };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      const result = await client.getCatalogItem("products", "item1");
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+        "/api/catalogs/products/items/item1"
+      );
+      expect(result).toEqual(mockResponse.data);
+    });
+
+    it("should encode catalog name and item ID with special characters", async () => {
+      const mockResponse = {
+        data: {
+          catalogName: "my catalog",
+          itemId: "item/1",
+          lastModified: 1704067200000,
+          size: 1024,
+          value: {},
+        },
+      };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      await client.getCatalogItem("my catalog", "item/1");
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+        "/api/catalogs/my%20catalog/items/item%2F1"
+      );
+    });
+  });
+
+  describe("deleteCatalogItem", () => {
+    it("should delete item with correct endpoint", async () => {
+      const mockResponse = {
+        data: {
+          msg: "Item deleted",
+          code: "Success",
+        },
+      };
+      mockAxiosInstance.delete.mockResolvedValue(mockResponse);
+
+      const result = await client.deleteCatalogItem("products", "item1");
+
+      expect(mockAxiosInstance.delete).toHaveBeenCalledWith(
+        "/api/catalogs/products/items/item1"
+      );
+      expect(result).toEqual(mockResponse.data);
+    });
+
+    it("should encode catalog name and item ID with special characters", async () => {
+      const mockResponse = {
+        data: {
+          msg: "Item deleted",
+          code: "Success",
+        },
+      };
+      mockAxiosInstance.delete.mockResolvedValue(mockResponse);
+
+      await client.deleteCatalogItem("my catalog", "item+1");
+
+      expect(mockAxiosInstance.delete).toHaveBeenCalledWith(
+        "/api/catalogs/my%20catalog/items/item%2B1"
+      );
+    });
+  });
+
   describe("getCatalogs", () => {
     it("should build pagination query parameters", async () => {
       const mockResponse = {
