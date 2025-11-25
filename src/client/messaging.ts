@@ -1,5 +1,7 @@
-import { IterableSuccessResponse } from "../types/common.js";
-import { IterableSuccessResponseSchema } from "../types/common.js";
+import {
+  IterableSuccessResponse,
+  IterableSuccessResponseSchema,
+} from "../types/common.js";
 import {
   CancelEmailParams,
   CancelInAppParams,
@@ -10,6 +12,7 @@ import {
   ChannelsResponse,
   ChannelsResponseSchema,
   EmbeddedMessagesResponse,
+  EmbeddedMessagesResponseSchema,
   GetEmbeddedMessagesParams,
   GetInAppMessagesParams,
   GetInAppMessagesResponse,
@@ -160,7 +163,7 @@ export function Messaging<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/embedded-messaging/messages?${queryParams.toString()}`
       );
-      return response.data;
+      return this.validateResponse(response, EmbeddedMessagesResponseSchema);
     }
 
     // get available message channels

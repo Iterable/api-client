@@ -31,8 +31,10 @@ describe("Subscription Management", () => {
   });
 
   describe("bulkUpdateSubscriptions", () => {
+    const successResponse = { data: { msg: "Success", code: "Success" } };
+
     it("should use PUT method with correct URL and query parameter", async () => {
-      mockAxiosInstance.put.mockResolvedValue({ data: {} });
+      mockAxiosInstance.put.mockResolvedValue(successResponse);
 
       await client.bulkUpdateSubscriptions({
         subscriptionGroup: "emailList",
@@ -48,7 +50,7 @@ describe("Subscription Management", () => {
     });
 
     it("should properly encode subscription group names with special characters", async () => {
-      mockAxiosInstance.put.mockResolvedValue({ data: {} });
+      mockAxiosInstance.put.mockResolvedValue(successResponse);
 
       await client.bulkUpdateSubscriptions({
         subscriptionGroup: "emailList",
@@ -64,7 +66,7 @@ describe("Subscription Management", () => {
     });
 
     it("should include both users arrays in request body", async () => {
-      mockAxiosInstance.put.mockResolvedValue({ data: {} });
+      mockAxiosInstance.put.mockResolvedValue(successResponse);
 
       await client.bulkUpdateSubscriptions({
         subscriptionGroup: "emailList",
@@ -84,7 +86,7 @@ describe("Subscription Management", () => {
     });
 
     it("should include undefined fields in request body", async () => {
-      mockAxiosInstance.put.mockResolvedValue({ data: {} });
+      mockAxiosInstance.put.mockResolvedValue(successResponse);
 
       await client.bulkUpdateSubscriptions({
         subscriptionGroup: "emailList",
@@ -103,7 +105,7 @@ describe("Subscription Management", () => {
     });
 
     it("should accept all valid subscription group types", async () => {
-      mockAxiosInstance.put.mockResolvedValue({ data: {} });
+      mockAxiosInstance.put.mockResolvedValue(successResponse);
 
       const validGroups: Array<"emailList" | "messageType" | "messageChannel"> =
         ["emailList", "messageType", "messageChannel"];
@@ -156,8 +158,10 @@ describe("Subscription Management", () => {
   });
 
   describe("subscribeUserByEmail", () => {
+    const successResponse = { data: { msg: "Success", code: "Success" } };
+
     it("should use PATCH method with correct URL", async () => {
-      mockAxiosInstance.patch.mockResolvedValue({ data: {} });
+      mockAxiosInstance.patch.mockResolvedValue(successResponse);
 
       await client.subscribeUserByEmail({
         subscriptionGroup: "emailList",
@@ -171,7 +175,7 @@ describe("Subscription Management", () => {
     });
 
     it("should properly encode email addresses with special characters", async () => {
-      mockAxiosInstance.patch.mockResolvedValue({ data: {} });
+      mockAxiosInstance.patch.mockResolvedValue(successResponse);
 
       await client.subscribeUserByEmail({
         subscriptionGroup: "emailList",
@@ -217,8 +221,10 @@ describe("Subscription Management", () => {
   });
 
   describe("subscribeUserByUserId", () => {
+    const successResponse = { data: { msg: "Success", code: "Success" } };
+
     it("should use PATCH method with correct URL", async () => {
-      mockAxiosInstance.patch.mockResolvedValue({ data: {} });
+      mockAxiosInstance.patch.mockResolvedValue(successResponse);
 
       await client.subscribeUserByUserId({
         subscriptionGroup: "messageType",
@@ -232,7 +238,7 @@ describe("Subscription Management", () => {
     });
 
     it("should properly encode user IDs with special characters", async () => {
-      mockAxiosInstance.patch.mockResolvedValue({ data: {} });
+      mockAxiosInstance.patch.mockResolvedValue(successResponse);
 
       await client.subscribeUserByUserId({
         subscriptionGroup: "messageType",
@@ -247,8 +253,10 @@ describe("Subscription Management", () => {
   });
 
   describe("unsubscribeUserByEmail", () => {
+    const successResponse = { data: { msg: "Success", code: "Success" } };
+
     it("should use DELETE method with correct URL", async () => {
-      mockAxiosInstance.delete.mockResolvedValue({ data: {} });
+      mockAxiosInstance.delete.mockResolvedValue(successResponse);
 
       await client.unsubscribeUserByEmail({
         subscriptionGroup: "emailList",
@@ -262,7 +270,7 @@ describe("Subscription Management", () => {
     });
 
     it("should properly encode email addresses with special characters", async () => {
-      mockAxiosInstance.delete.mockResolvedValue({ data: {} });
+      mockAxiosInstance.delete.mockResolvedValue(successResponse);
 
       await client.unsubscribeUserByEmail({
         subscriptionGroup: "emailList",
@@ -277,8 +285,10 @@ describe("Subscription Management", () => {
   });
 
   describe("unsubscribeUserByUserId", () => {
+    const successResponse = { data: { msg: "Success", code: "Success" } };
+
     it("should use DELETE method with correct URL", async () => {
-      mockAxiosInstance.delete.mockResolvedValue({ data: {} });
+      mockAxiosInstance.delete.mockResolvedValue(successResponse);
 
       await client.unsubscribeUserByUserId({
         subscriptionGroup: "messageType",
@@ -292,7 +302,7 @@ describe("Subscription Management", () => {
     });
 
     it("should properly encode user IDs with special characters", async () => {
-      mockAxiosInstance.delete.mockResolvedValue({ data: {} });
+      mockAxiosInstance.delete.mockResolvedValue(successResponse);
 
       await client.unsubscribeUserByUserId({
         subscriptionGroup: "messageType",
@@ -332,29 +342,23 @@ describe("Subscription Management", () => {
       }
     });
 
-    it("should reject non-success response codes", async () => {
+    it("should reject non-success response codes via validation", async () => {
       const invalidResponse = {
         code: "BadRequest",
         msg: "This would normally be thrown as an exception by the base client",
       };
       mockAxiosInstance.put.mockResolvedValue({ data: invalidResponse });
 
-      const result = await client.bulkUpdateSubscriptions({
-        subscriptionGroup: "emailList",
-        subscriptionGroupId: 123,
-        action: "subscribe",
-        users: ["test@example.com"],
-      });
-
-      // This should fail validation because only "Success" code is allowed in actual responses
-      // (HTTP errors are thrown as exceptions by the base client)
-      const validation = IterableSuccessResponseSchema.safeParse(result);
-      expect(validation.success).toBe(false);
-      if (!validation.success) {
-        expect(validation.error.issues.length).toBeGreaterThan(0);
-        expect(validation.error?.issues[0]?.code).toBe("invalid_value");
-        expect(validation.error?.issues[0]?.path).toEqual(["code"]);
-      }
+      // Response validation now happens inside the method, so it throws
+      // when the response doesn't match the expected schema
+      await expect(
+        client.bulkUpdateSubscriptions({
+          subscriptionGroup: "emailList",
+          subscriptionGroupId: 123,
+          action: "subscribe",
+          users: ["test@example.com"],
+        })
+      ).rejects.toThrow("Response validation failed");
     });
 
     it("should handle HTTP errors with proper Iterable API error parsing", async () => {

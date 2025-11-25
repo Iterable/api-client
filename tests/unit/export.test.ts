@@ -24,20 +24,73 @@ describe("Export Operations", () => {
     jest.clearAllMocks();
   });
 
+  describe("getExportJobs", () => {
+    it("should get export jobs list", async () => {
+      const mockResponse = {
+        data: {
+          jobs: [
+            {
+              id: 123,
+              dataTypeName: "user",
+              jobState: "Completed",
+              bytesExported: 1024,
+            },
+            {
+              id: 124,
+              dataTypeName: "emailSend",
+              jobState: "Running",
+            },
+          ],
+        },
+      };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      const result = await client.getExportJobs();
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith("/api/export/jobs?");
+      expect(result).toEqual(mockResponse.data);
+    });
+
+    it("should get export jobs filtered by state", async () => {
+      const mockResponse = {
+        data: {
+          jobs: [
+            {
+              id: 125,
+              dataTypeName: "purchase",
+              jobState: "Running",
+            },
+          ],
+        },
+      };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      const result = await client.getExportJobs({ jobState: "Running" });
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+        "/api/export/jobs?jobState=Running"
+      );
+      expect(result).toEqual(mockResponse.data);
+    });
+  });
+
   describe("getExportFiles", () => {
     it("should get export files for a job", async () => {
       const mockResponse = {
         data: {
+          exportTruncated: false,
           files: [
             {
-              fileName: "export_123_part_1.csv",
-              downloadUrl: "https://example.com/file1.csv",
+              file: "export_123_part_1.csv",
+              url: "https://example.com/file1.csv",
             },
             {
-              fileName: "export_123_part_2.csv",
-              downloadUrl: "https://example.com/file2.csv",
+              file: "export_123_part_2.csv",
+              url: "https://example.com/file2.csv",
             },
           ],
+          jobId: 123,
+          jobState: "Completed",
         },
       };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
@@ -53,12 +106,15 @@ describe("Export Operations", () => {
     it("should get export files with pagination", async () => {
       const mockResponse = {
         data: {
+          exportTruncated: false,
           files: [
             {
-              fileName: "export_456_part_3.csv",
-              downloadUrl: "https://example.com/file3.csv",
+              file: "export_456_part_3.csv",
+              url: "https://example.com/file3.csv",
             },
           ],
+          jobId: 456,
+          jobState: "Running",
         },
       };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);

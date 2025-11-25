@@ -121,21 +121,26 @@ export type GetExportJobsParams = z.infer<typeof GetExportJobsParamsSchema>;
 export type GetExportFilesParams = z.infer<typeof GetExportFilesParamsSchema>;
 export type StartExportJobParams = z.infer<typeof StartExportJobParamsSchema>;
 export type CancelExportJobParams = z.infer<typeof CancelExportJobParamsSchema>;
-export interface ExportJob {
-  id: number;
-  dataTypeName: string;
-  jobState:
-    | "enqueued"
-    | "queued"
-    | "running"
-    | "completed"
-    | "failed"
-    | "cancelled"
-    | "cancelling";
-  scheduledStartTime?: string;
-  endTime?: string;
-  bytesExported?: number;
-}
+
+// Export job state enum - API returns capitalized values
+export const ExportJobStateSchema = z.enum([
+  "Enqueued",
+  "Running",
+  "Completed",
+  "Failed",
+]);
+
+// Export job schema - matches JobModel from API docs
+export const ExportJobSchema = z.object({
+  id: z.number(),
+  dataTypeName: z.string(),
+  jobState: ExportJobStateSchema,
+  scheduledStartTime: z.string().optional(),
+  endTime: z.string().optional(),
+  bytesExported: z.number().optional(),
+});
+
+export type ExportJob = z.infer<typeof ExportJobSchema>;
 
 export const StartExportJobResponseSchema = z.object({
   jobId: z.number(),
@@ -146,32 +151,50 @@ export type StartExportJobResponse = z.infer<
   typeof StartExportJobResponseSchema
 >;
 
-export interface GetExportJobsResponse {
-  jobs: ExportJob[];
-}
+// Response schema for getExportJobs
+export const GetExportJobsResponseSchema = z.object({
+  jobs: z.array(ExportJobSchema),
+});
+
+export type GetExportJobsResponse = z.infer<typeof GetExportJobsResponseSchema>;
 
 /**
  * Individual export file with download URL
  * Each file is up to 10MB in size
  */
-export interface ExportFileAndUrl {
-  file: string;
-  url: string;
-}
+export const ExportFileAndUrlSchema = z.object({
+  file: z.string(),
+  url: z.string(),
+});
+
+export type ExportFileAndUrl = z.infer<typeof ExportFileAndUrlSchema>;
 
 /**
  * Response from getExportFiles containing job status and file download URLs
  * Files are added to the list as the export job runs
  */
-export interface GetExportFilesResponse {
-  exportTruncated: boolean;
-  files: ExportFileAndUrl[];
-  jobId: number;
-  jobState: "Enqueued" | "Running" | "Completed" | "Failed";
-}
+export const GetExportFilesResponseSchema = z.object({
+  exportTruncated: z.boolean(),
+  files: z.array(ExportFileAndUrlSchema),
+  jobId: z.number(),
+  jobState: ExportJobStateSchema,
+});
 
-export interface CancelExportJobResponse {
-  // The cancel endpoint returns a simple success response
-  // Based on API docs: "successful operation" with no specific schema
-  [key: string]: unknown;
-}
+export type GetExportFilesResponse = z.infer<
+  typeof GetExportFilesResponseSchema
+>;
+
+/**
+ * Response from cancelExportJob
+ * The cancel endpoint returns a simple success response
+ */
+export const CancelExportJobResponseSchema = z
+  .object({
+    msg: z.string().optional(),
+    code: z.string().optional(),
+  })
+  .passthrough(); // Allow additional fields
+
+export type CancelExportJobResponse = z.infer<
+  typeof CancelExportJobResponseSchema
+>;

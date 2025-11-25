@@ -1,20 +1,25 @@
-import { IterableSuccessResponse } from "../types/common.js";
-import { IterableSuccessResponseSchema } from "../types/common.js";
-import { UserBulkUpdateListResponse } from "../types/lists.js";
-import { UserBulkUpdateListResponseSchema } from "../types/lists.js";
+import {
+  IterableSuccessResponse,
+  IterableSuccessResponseSchema,
+} from "../types/common.js";
+import {
+  UserBulkUpdateListResponse,
+  UserBulkUpdateListResponseSchema,
+} from "../types/lists.js";
 import {
   BulkUpdateUsersParams,
   GetSentMessagesParams,
   GetSentMessagesResponse,
+  GetSentMessagesResponseSchema,
   GetUserFieldsResponse,
   GetUserFieldsResponseSchema,
   UpdateEmailParams,
   UpdateUserParams,
   UpdateUserSubscriptionsParams,
   UserResponse,
+  UserResponseSchema,
 } from "../types/users.js";
-import type { Constructor } from "./base.js";
-import type { BaseIterableClient } from "./base.js";
+import type { BaseIterableClient, Constructor } from "./base.js";
 
 /**
  * User management operations mixin
@@ -32,7 +37,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
         `/api/users/${encodeURIComponent(email)}`,
         opts?.signal ? { signal: opts.signal } : {}
       );
-      return response.data;
+      return this.validateResponse(response, UserResponseSchema);
     }
 
     /**
@@ -42,10 +47,11 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       userId: string,
       opts?: { signal?: AbortSignal }
     ): Promise<UserResponse> {
-      const response = await this.client.get(`/api/users/byUserId/${userId}`, {
-        ...(opts?.signal ? { signal: opts.signal } : {}),
-      });
-      return response.data;
+      const response = await this.client.get(
+        `/api/users/byUserId/${encodeURIComponent(userId)}`,
+        opts?.signal ? { signal: opts.signal } : {}
+      );
+      return this.validateResponse(response, UserResponseSchema);
     }
 
     /**
@@ -67,7 +73,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.delete(
         `/api/users/${encodeURIComponent(email)}`
       );
-      return response.data;
+      return this.validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -79,7 +85,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.delete(
         `/api/users/byUserId/${encodeURIComponent(userId)}`
       );
-      return response.data;
+      return this.validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -159,7 +165,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/users/getSentMessages?${queryParams.toString()}`
       );
-      return response.data;
+      return this.validateResponse(response, GetSentMessagesResponseSchema);
     }
 
     /**

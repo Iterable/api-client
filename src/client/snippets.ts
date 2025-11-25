@@ -44,7 +44,7 @@ export function Snippets<T extends Constructor<BaseIterableClient>>(Base: T) {
       opts?: { signal?: AbortSignal }
     ): Promise<GetSnippetResponse> {
       const response = await this.client.get(
-        `/api/snippets/${params.identifier}`,
+        `/api/snippets/${encodeURIComponent(String(params.identifier))}`,
         opts?.signal ? { signal: opts.signal } : {}
       );
       return this.validateResponse(response, GetSnippetResponseSchema);
@@ -56,7 +56,7 @@ export function Snippets<T extends Constructor<BaseIterableClient>>(Base: T) {
     ): Promise<UpdateSnippetResponse> {
       const { identifier, ...body } = params;
       const response = await this.client.put(
-        `/api/snippets/${identifier}`,
+        `/api/snippets/${encodeURIComponent(String(identifier))}`,
         body,
         opts
       );
@@ -68,7 +68,7 @@ export function Snippets<T extends Constructor<BaseIterableClient>>(Base: T) {
       opts?: { signal?: AbortSignal }
     ): Promise<DeleteSnippetResponse> {
       const response = await this.client.delete(
-        `/api/snippets/${params.identifier}`,
+        `/api/snippets/${encodeURIComponent(String(params.identifier))}`,
         opts?.signal ? { signal: opts.signal } : {}
       );
       return this.validateResponse(response, DeleteSnippetResponseSchema);

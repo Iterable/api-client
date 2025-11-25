@@ -99,39 +99,39 @@ describe("Template Management", () => {
     });
   });
 
-  describe("deleteTemplates", () => {
-    it("should delete templates", async () => {
-      const templateIds = [12345, 67890];
+  describe("bulkDeleteTemplates", () => {
+    it("should bulk delete multiple templates", async () => {
+      const templateIds = [67890, 67891, 67892];
       const mockResponse = {
         data: {
           success: templateIds,
           failed: [],
-          failureReason: "",
         },
       };
       mockAxiosInstance.post.mockResolvedValue(mockResponse);
 
-      const result = await client.deleteTemplates(templateIds);
+      const result = await client.bulkDeleteTemplates({ ids: templateIds });
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         "/api/templates/bulkDelete",
         { ids: templateIds }
       );
-      expect(result).toEqual({
-        success: templateIds,
-        failed: [],
-        failureReason: "",
-      });
+      expect(result).toEqual(mockResponse.data);
     });
   });
 
-  describe("bulkDeleteTemplates", () => {
-    it("should bulk delete multiple templates", async () => {
-      const templateIds = [67890, 67891, 67892];
-      const mockResponse = { data: createMockIterableResponse() };
+  describe("deleteTemplates (deprecated)", () => {
+    it("should delete templates using bulkDeleteTemplates under the hood", async () => {
+      const templateIds = [12345, 12346];
+      const mockResponse = {
+        data: {
+          success: templateIds,
+          failed: [],
+        },
+      };
       mockAxiosInstance.post.mockResolvedValue(mockResponse);
 
-      const result = await client.bulkDeleteTemplates({ ids: templateIds });
+      const result = await client.deleteTemplates(templateIds);
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         "/api/templates/bulkDelete",
