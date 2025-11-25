@@ -1,6 +1,6 @@
 {
   "name": "@iterable/api",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "TypeScript client library for the Iterable API",
   "keywords": [
     "iterable",
