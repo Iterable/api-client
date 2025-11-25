@@ -30,8 +30,8 @@ export const SnippetResponseSchema = z.object({
 
 export type SnippetResponse = z.infer<typeof SnippetResponseSchema>;
 
-// Request schemas
-export const CreateSnippetRequestSchema = z.object({
+// Parameter schemas for creating snippets
+export const CreateSnippetParamsSchema = z.object({
   content: z
     .string()
     .describe(
@@ -57,30 +57,7 @@ export const CreateSnippetRequestSchema = z.object({
     ),
 });
 
-export type CreateSnippetRequest = z.infer<typeof CreateSnippetRequestSchema>;
-
-export const UpdateSnippetRequestSchema = z.object({
-  content: z
-    .string()
-    .describe(
-      'Content of the snippet. Handlebars must be valid. Disallowed content: script tags with JS sources or non-JSON content, inline JS event handlers (e.g., onload="..."), and javascript: in href or src attributes (anchors and iframes).'
-    ),
-  description: z.string().optional().describe("Description of the snippet"),
-  createdByUserId: z
-    .string()
-    .optional()
-    .describe(
-      "User ID (email) of the updater. If not provided, defaults to the project creator."
-    ),
-  variables: z
-    .array(z.string())
-    .optional()
-    .describe(
-      "List of variable names used in the content with a Handlebars expression such as {{myField}}. Variable names are case-sensitive and should be simple identifiers (letters, numbers, underscores). To learn more about using Handlebars in Snippets, see Customizing Snippets with Variables."
-    ),
-});
-
-export type UpdateSnippetRequest = z.infer<typeof UpdateSnippetRequestSchema>;
+export type CreateSnippetParams = z.infer<typeof CreateSnippetParamsSchema>;
 
 // Response schemas
 export const GetSnippetsResponseSchema = z.object({
@@ -113,7 +90,7 @@ export const DeleteSnippetResponseSchema = z.object({
 
 export type DeleteSnippetResponse = z.infer<typeof DeleteSnippetResponseSchema>;
 
-// Parameter schemas
+// Identifier schema for get/update/delete operations
 export const SnippetIdentifierSchema = z
   .union([
     z.string().describe("Snippet name"),
@@ -133,6 +110,24 @@ export type GetSnippetParams = z.infer<typeof GetSnippetParamsSchema>;
 
 export const UpdateSnippetParamsSchema = z.object({
   identifier: SnippetIdentifierSchema,
+  content: z
+    .string()
+    .describe(
+      'Content of the snippet. Handlebars must be valid. Disallowed content: script tags with JS sources or non-JSON content, inline JS event handlers (e.g., onload="..."), and javascript: in href or src attributes (anchors and iframes).'
+    ),
+  description: z.string().optional().describe("Description of the snippet"),
+  createdByUserId: z
+    .string()
+    .optional()
+    .describe(
+      "User ID (email) of the updater. If not provided, defaults to the project creator."
+    ),
+  variables: z
+    .array(z.string())
+    .optional()
+    .describe(
+      "List of variable names used in the content with a Handlebars expression such as {{myField}}. Variable names are case-sensitive and should be simple identifiers (letters, numbers, underscores). To learn more about using Handlebars in Snippets, see Customizing Snippets with Variables."
+    ),
 });
 
 export type UpdateSnippetParams = z.infer<typeof UpdateSnippetParamsSchema>;

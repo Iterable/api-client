@@ -9,9 +9,9 @@ import {
 
 import { IterableClient } from "../../src/client";
 import {
-  CreateSnippetRequestSchema,
+  CreateSnippetParamsSchema,
   SnippetResponseSchema,
-  UpdateSnippetRequestSchema,
+  UpdateSnippetParamsSchema,
 } from "../../src/types/snippets.js";
 import { createMockClient, createMockSnippet } from "../utils/test-helpers";
 
@@ -158,15 +158,19 @@ describe("Snippets Management", () => {
       mockAxiosInstance.put.mockResolvedValue(mockResponse);
 
       const params = {
+        identifier: "test-snippet",
         content: "<p>Updated content {{name}}!</p>",
         description: "Updated description",
       };
 
-      await client.updateSnippet({ identifier: "test-snippet" }, params);
+      await client.updateSnippet(params);
 
       expect(mockAxiosInstance.put).toHaveBeenCalledWith(
         "/api/snippets/test-snippet",
-        params,
+        {
+          content: "<p>Updated content {{name}}!</p>",
+          description: "Updated description",
+        },
         undefined
       );
     });
@@ -176,10 +180,11 @@ describe("Snippets Management", () => {
       mockAxiosInstance.put.mockResolvedValue(mockResponse);
 
       const params = {
+        identifier: 12345,
         content: "<p>Updated content!</p>",
       };
 
-      const result = await client.updateSnippet({ identifier: 12345 }, params);
+      const result = await client.updateSnippet(params);
 
       expect(result).toHaveProperty("snippetId", 12345);
     });
@@ -241,7 +246,7 @@ describe("Snippets Management", () => {
       ).toThrow();
     });
 
-    it("should validate create snippet request schema", () => {
+    it("should validate create snippet params schema", () => {
       const validRequest = {
         name: "test-snippet",
         content: "<p>Hello {{name}}!</p>",
@@ -251,16 +256,16 @@ describe("Snippets Management", () => {
 
       // Valid request
       expect(() =>
-        CreateSnippetRequestSchema.parse(validRequest)
+        CreateSnippetParamsSchema.parse(validRequest)
       ).not.toThrow();
 
       // Missing required fields
       expect(() =>
-        CreateSnippetRequestSchema.parse({ ...validRequest, name: undefined })
+        CreateSnippetParamsSchema.parse({ ...validRequest, name: undefined })
       ).toThrow();
 
       expect(() =>
-        CreateSnippetRequestSchema.parse({
+        CreateSnippetParamsSchema.parse({
           ...validRequest,
           content: undefined,
         })
@@ -268,15 +273,16 @@ describe("Snippets Management", () => {
 
       // Optional fields should work
       expect(() =>
-        CreateSnippetRequestSchema.parse({
+        CreateSnippetParamsSchema.parse({
           name: "test",
           content: "<p>Test</p>",
         })
       ).not.toThrow();
     });
 
-    it("should validate update snippet request schema", () => {
+    it("should validate update snippet params schema", () => {
       const validRequest = {
+        identifier: "test-snippet",
         content: "<p>Updated content {{name}}!</p>",
         description: "Updated description",
         variables: ["name"],
@@ -284,12 +290,19 @@ describe("Snippets Management", () => {
 
       // Valid request
       expect(() =>
-        UpdateSnippetRequestSchema.parse(validRequest)
+        UpdateSnippetParamsSchema.parse(validRequest)
       ).not.toThrow();
 
-      // Content is required for updates
+      // Identifier and content are required for updates
       expect(() =>
-        UpdateSnippetRequestSchema.parse({
+        UpdateSnippetParamsSchema.parse({
+          ...validRequest,
+          identifier: undefined,
+        })
+      ).toThrow();
+
+      expect(() =>
+        UpdateSnippetParamsSchema.parse({
           ...validRequest,
           content: undefined,
         })
@@ -297,7 +310,10 @@ describe("Snippets Management", () => {
 
       // Other fields are optional
       expect(() =>
-        UpdateSnippetRequestSchema.parse({ content: "<p>Test</p>" })
+        UpdateSnippetParamsSchema.parse({
+          identifier: 12345,
+          content: "<p>Test</p>",
+        })
       ).not.toThrow();
     });
   });

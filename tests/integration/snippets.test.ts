@@ -141,14 +141,12 @@ describe("Snippets Management Integration Tests", () => {
       const updateResponse = await retryRateLimited(
         () =>
           withTimeout(
-            client.updateSnippet(
-              { identifier: testSnippetName },
-              {
-                content: updatedContent,
-                description: "Updated CRUD test snippet",
-                variables: ["firstName", "company"],
-              }
-            )
+            client.updateSnippet({
+              identifier: testSnippetName,
+              content: updatedContent,
+              description: "Updated CRUD test snippet",
+              variables: ["firstName", "company"],
+            })
           ),
         "Update snippet by name"
       );
@@ -160,13 +158,11 @@ describe("Snippets Management Integration Tests", () => {
       const updateByIdResponse = await retryRateLimited(
         () =>
           withTimeout(
-            client.updateSnippet(
-              { identifier: snippetId },
-              {
-                content: updateByIdContent,
-                variables: ["user"],
-              }
-            )
+            client.updateSnippet({
+              identifier: snippetId,
+              content: updateByIdContent,
+              variables: ["user"],
+            })
           ),
         "Update snippet by ID"
       );
