@@ -48,8 +48,8 @@ describe("User Management Integration Tests", () => {
     });
 
     // ✅ VERIFY: User data is correct (already retrieved by waitForUserUpdate)
-    expect(userResponse.user.email).toBe(testUserEmail);
-    expect(userResponse.user.userId).toBe(testUserId);
+    expect(userResponse.user?.email).toBe(testUserEmail);
+    expect(userResponse.user?.userId).toBe(testUserId);
   });
 
   it("should get user by email using getUserByEmail", async () => {
@@ -70,8 +70,8 @@ describe("User Management Integration Tests", () => {
     const userResponse = await withTimeout(
       client.getUserByEmail(testUserEmail)
     );
-    expect(userResponse.user.email).toBe(testUserEmail);
-    expect(userResponse.user.dataFields?.testField).toBe("email-test");
+    expect(userResponse.user?.email).toBe(testUserEmail);
+    expect(userResponse.user?.dataFields?.testField).toBe("email-test");
   });
 
   it("should get user by userId using getUserByUserId", async () => {
@@ -90,9 +90,9 @@ describe("User Management Integration Tests", () => {
 
     // ✅ VERIFY: User can be retrieved by userId
     const userResponse = await withTimeout(client.getUserByUserId(testUserId));
-    expect(userResponse.user.userId).toBe(testUserId);
-    expect(userResponse.user.email).toBe(testUserEmail);
-    expect(userResponse.user.dataFields?.testField).toBe("userId-test");
+    expect(userResponse.user?.userId).toBe(testUserId);
+    expect(userResponse.user?.email).toBe(testUserEmail);
+    expect(userResponse.user?.dataFields?.testField).toBe("userId-test");
   });
 
   it("should update user data fields", async () => {
@@ -269,7 +269,7 @@ describe("User Management Integration Tests", () => {
     await retryWithBackoff(
       async () => {
         const userCheck = await client.getUserByUserId(deleteTestUserId);
-        if (!userCheck.user.userId) {
+        if (!userCheck.user?.userId) {
           throw new Error("userId not set on user profile yet");
         }
         expect(userCheck.user.userId).toBe(deleteTestUserId);
@@ -330,7 +330,7 @@ describe("User Management Integration Tests", () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const userResponse = await withTimeout(client.getUserByEmail(newEmail));
-      expect(userResponse.user.email).toBe(newEmail);
+      expect(userResponse.user?.email).toBe(newEmail);
     } finally {
       // Cleanup both possible emails
       await cleanupTestUser(client, oldEmail);

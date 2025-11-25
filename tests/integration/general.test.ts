@@ -113,12 +113,12 @@ describe("General Integration Tests", () => {
         operationCount: 2,
       });
 
-      expect(userResponse.user.email).toBe(testUserEmail);
-      expect(userResponse.user.dataFields?.consistencyTest).toBe(
+      expect(userResponse.user?.email).toBe(testUserEmail);
+      expect(userResponse.user?.dataFields?.consistencyTest).toBe(
         testData.dataFields.consistencyTest
       );
-      expect(userResponse.user.dataFields?.operationCount).toBe(2);
-      expect(userResponse.user.dataFields?.lastUpdate).toBeDefined();
+      expect(userResponse.user?.dataFields?.operationCount).toBe(2);
+      expect(userResponse.user?.dataFields?.lastUpdate).toBeDefined();
     });
   });
 });
