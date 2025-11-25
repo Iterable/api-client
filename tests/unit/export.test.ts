@@ -32,13 +32,13 @@ describe("Export Operations", () => {
             {
               id: 123,
               dataTypeName: "user",
-              jobState: "Completed",
+              jobState: "completed",
               bytesExported: 1024,
             },
             {
               id: 124,
               dataTypeName: "emailSend",
-              jobState: "Running",
+              jobState: "running",
             },
           ],
         },
@@ -58,17 +58,17 @@ describe("Export Operations", () => {
             {
               id: 125,
               dataTypeName: "purchase",
-              jobState: "Running",
+              jobState: "running",
             },
           ],
         },
       };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
-      const result = await client.getExportJobs({ jobState: "Running" });
+      const result = await client.getExportJobs({ jobState: "running" });
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith(
-        "/api/export/jobs?jobState=Running"
+        "/api/export/jobs?jobState=running"
       );
       expect(result).toEqual(mockResponse.data);
     });
@@ -90,7 +90,7 @@ describe("Export Operations", () => {
             },
           ],
           jobId: 123,
-          jobState: "Completed",
+          jobState: "completed",
         },
       };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
@@ -114,7 +114,7 @@ describe("Export Operations", () => {
             },
           ],
           jobId: 456,
-          jobState: "Running",
+          jobState: "running",
         },
       };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);

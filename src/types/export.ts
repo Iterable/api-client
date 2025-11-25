@@ -122,12 +122,13 @@ export type GetExportFilesParams = z.infer<typeof GetExportFilesParamsSchema>;
 export type StartExportJobParams = z.infer<typeof StartExportJobParamsSchema>;
 export type CancelExportJobParams = z.infer<typeof CancelExportJobParamsSchema>;
 
-// Export job state enum - API returns capitalized values
+// Export job state enum - API uses PlayLowercaseJsonEnum so values are lowercase
 export const ExportJobStateSchema = z.enum([
-  "Enqueued",
-  "Running",
-  "Completed",
-  "Failed",
+  "enqueued",
+  "running",
+  "completed",
+  "failed",
+  "cancelling",
 ]);
 
 // Export job schema - matches JobModel from API docs
