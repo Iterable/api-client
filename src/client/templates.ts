@@ -1,7 +1,10 @@
 import { z } from "zod";
 
-import { IterableSuccessResponse } from "../types/common.js";
-import { IterableSuccessResponseSchema } from "../types/common.js";
+import {
+  formatSortParam,
+  IterableSuccessResponse,
+  IterableSuccessResponseSchema,
+} from "../types/common.js";
 import {
   BulkDeleteTemplatesParams,
   BulkDeleteTemplatesResponse,
@@ -112,7 +115,20 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
     async getTemplates(
       options?: GetTemplatesParams
     ): Promise<GetTemplatesResponse> {
+      // Always use pagination with defaults to ensure consistent API behavior
+      const page = options?.page ?? 1;
+      const pageSize = options?.pageSize ?? 10;
+      const sort = options?.sort;
+
       const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("pageSize", pageSize.toString());
+
+      const sortString = formatSortParam(sort);
+      if (sortString) {
+        params.append("sort", sortString);
+      }
+
       if (options?.templateType)
         params.append("templateType", options.templateType);
       if (options?.messageMedium)

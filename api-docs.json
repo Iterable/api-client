@@ -46,7 +46,7 @@
           "type": "object"
         },
         "campaignDataFields": {
-          "description": "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data.",
+          "description": "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name.",
           "type": "object"
         },
         "ccEmails": {
@@ -57,7 +57,7 @@
           "type": "array"
         },
         "clientTemplateId": {
-          "description": "Client template Id. Used as a secondary key to reference the template",
+          "description": "Client template ID. Used as a secondary key to reference the template",
           "type": "string"
         },
         "creatorUserId": {
@@ -250,6 +250,69 @@
       },
       "type": "object"
     },
+    "ApiEmbeddedTemplateModel": {
+      "properties": {
+        "body": {
+          "description": "Body text of the embedded message",
+          "type": "string"
+        },
+        "campaignDataFields": {
+          "description": "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name.",
+          "type": "object"
+        },
+        "campaignId": {
+          "description": "Campaign ID",
+          "format": "int32",
+          "type": "integer"
+        },
+        "clientTemplateId": {
+          "description": "Client template ID. Used as a secondary key to reference the template",
+          "type": "string"
+        },
+        "elements": {
+          "$ref": "#/definitions/Elements",
+          "description": "Elements (buttons, media, text fields) for the embedded message"
+        },
+        "isDefaultLocale": {
+          "description": "Ask your Iterable CSM to enroll you in the beta for this feature.\n\nIdentifies if the locale associated with the response is the template's default. If empty or flexible default locales are not enabled for the project, the project's default locale is assigned.",
+          "type": "boolean"
+        },
+        "locale": {
+          "description": "The locale for the content in this request. Leave empty for default locale. Iterable automatically sends the content with a locale that matches a user profile's <code>locale</code> field.",
+          "type": "string"
+        },
+        "messageTypeId": {
+          "description": "Message type ID",
+          "format": "int32",
+          "type": "integer"
+        },
+        "name": {
+          "description": "Name of the template",
+          "type": "string"
+        },
+        "payload": {
+          "description": "Payload",
+          "type": "object"
+        },
+        "placementId": {
+          "description": "Placement ID that this template is associated with",
+          "type": "object"
+        },
+        "templateId": {
+          "description": "Embedded message template ID",
+          "format": "int64",
+          "type": "integer"
+        },
+        "title": {
+          "description": "Title of the embedded message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "templateId"
+      ],
+      "type": "object"
+    },
     "ApiInAppMessage": {
       "properties": {
         "campaignId": {
@@ -336,7 +399,7 @@
     "ApiInAppTemplateModel": {
       "properties": {
         "campaignDataFields": {
-          "description": "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data.",
+          "description": "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name.",
           "type": "object"
         },
         "campaignId": {
@@ -345,7 +408,7 @@
           "type": "integer"
         },
         "clientTemplateId": {
-          "description": "Client template Id. Used as a secondary key to reference the template",
+          "description": "Client template ID. Used as a secondary key to reference the template",
           "type": "string"
         },
         "expirationDateTime": {
@@ -423,7 +486,7 @@
           "type": "boolean"
         },
         "campaignDataFields": {
-          "description": "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data.",
+          "description": "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name.",
           "type": "object"
         },
         "campaignId": {
@@ -431,7 +494,7 @@
           "type": "object"
         },
         "clientTemplateId": {
-          "description": "Client template Id. Used as a secondary key to reference the template",
+          "description": "Client template ID. Used as a secondary key to reference the template",
           "type": "string"
         },
         "createdAt": {
@@ -550,7 +613,7 @@
     "ApiSMSTemplateModel": {
       "properties": {
         "campaignDataFields": {
-          "description": "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data.",
+          "description": "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name.",
           "type": "object"
         },
         "campaignId": {
@@ -558,7 +621,7 @@
           "type": "object"
         },
         "clientTemplateId": {
-          "description": "Client template Id. Used as a secondary key to reference the template",
+          "description": "Client template ID. Used as a secondary key to reference the template",
           "type": "string"
         },
         "createdAt": {
@@ -1600,6 +1663,46 @@
       ],
       "type": "object"
     },
+    "Cookie": {
+      "properties": {
+        "asJava": {
+          "$ref": "#/definitions/Cookie"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "httpOnly": {
+          "type": "boolean"
+        },
+        "maxAge": {
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sameSite": {
+          "$ref": "#/definitions/SameSite"
+        },
+        "secure": {
+          "type": "boolean"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "asJava",
+        "httpOnly",
+        "name",
+        "path",
+        "secure",
+        "value"
+      ],
+      "type": "object"
+    },
     "CreateCampaignRequest": {
       "properties": {
         "campaignDataFields": {
@@ -1872,6 +1975,37 @@
       ],
       "type": "object"
     },
+    "Elements": {
+      "properties": {
+        "buttons": {
+          "description": "Buttons to display with the embedded message. Each template may have up to two buttons with associated open URLs or custom actions.",
+          "items": {
+            "$ref": "#/definitions/Button"
+          },
+          "type": "array"
+        },
+        "defaultAction": {
+          "$ref": "#/definitions/Action",
+          "description": "The open action that occurs when a user clicks on the embedded message itself."
+        },
+        "mediaUrl": {
+          "description": "URL for image or video content to display in the embedded message.",
+          "type": "string"
+        },
+        "mediaUrlCaption": {
+          "description": "Alt text for the media specified by <code>mediaUrl</code>.",
+          "type": "string"
+        },
+        "text": {
+          "description": "Custom text fields for the template. Each custom text field has a <code>label</code> key that is predefined by the template's associated placement, and a configurable <code>text</code> value.",
+          "items": {
+            "$ref": "#/definitions/Text"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "EmbeddedClickRequest": {
       "properties": {
         "buttonIdentifier": {
@@ -1981,6 +2115,40 @@
           "type": "string"
         }
       },
+      "type": "object"
+    },
+    "ErrorHttpResponse": {
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/JsObject"
+        },
+        "error": {
+          "$ref": "#/definitions/ErrorWithStatus"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "data",
+        "error",
+        "message"
+      ],
+      "type": "object"
+    },
+    "ErrorWithStatus": {
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/Status"
+        }
+      },
+      "required": [
+        "status"
+      ],
       "type": "object"
     },
     "ExperimentMetricsResponse": {
@@ -2177,6 +2345,28 @@
       },
       "type": "object"
     },
+    "Flash": {
+      "properties": {
+        "asJava": {
+          "$ref": "#/definitions/Flash"
+        },
+        "data": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "empty": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "asJava",
+        "data",
+        "empty"
+      ],
+      "type": "object"
+    },
     "FrequencyCap": {
       "properties": {
         "days": {
@@ -2368,11 +2558,23 @@
     },
     "GetTemplatesResponse": {
       "properties": {
+        "nextPageUrl": {
+          "description": "The URL to the next page of templates, if applicable.",
+          "type": "string"
+        },
+        "previousPageUrl": {
+          "description": "The URL to the previous page of templates, if applicable.",
+          "type": "string"
+        },
         "templates": {
           "items": {
             "$ref": "#/definitions/ApiTemplateResponse"
           },
           "type": "array"
+        },
+        "totalTemplatesCount": {
+          "description": "The total count of templates across all pages for the supplied query. Only present when using pagination.",
+          "type": "object"
         }
       },
       "required": [
@@ -2402,6 +2604,17 @@
       },
       "required": [
         "webhooks"
+      ],
+      "type": "object"
+    },
+    "HttpEntity": {
+      "properties": {
+        "knownEmpty": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "knownEmpty"
       ],
       "type": "object"
     },
@@ -3380,6 +3593,28 @@
       ],
       "type": "object"
     },
+    "ResponseHeader": {
+      "properties": {
+        "headers": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "reasonPhrase": {
+          "type": "string"
+        },
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "headers",
+        "status"
+      ],
+      "type": "object"
+    },
     "RichMediaURL": {
       "properties": {
         "android": {
@@ -3459,6 +3694,17 @@
           "type": "string"
         }
       },
+      "type": "object"
+    },
+    "SameSite": {
+      "properties": {
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
       "type": "object"
     },
     "ScheduleCampaignRequest": {
@@ -3682,6 +3928,38 @@
       },
       "required": [
         "jobId"
+      ],
+      "type": "object"
+    },
+    "Status": {
+      "properties": {
+        "attrs": {
+          "$ref": "#/definitions/TypedMap"
+        },
+        "body": {
+          "$ref": "#/definitions/HttpEntity"
+        },
+        "header": {
+          "$ref": "#/definitions/ResponseHeader"
+        },
+        "newCookies": {
+          "items": {
+            "$ref": "#/definitions/Cookie"
+          },
+          "type": "array"
+        },
+        "newFlash": {
+          "$ref": "#/definitions/Flash"
+        },
+        "newSession": {
+          "$ref": "#/definitions/Session"
+        }
+      },
+      "required": [
+        "attrs",
+        "body",
+        "header",
+        "newCookies"
       ],
       "type": "object"
     },
@@ -3974,10 +4252,6 @@
     },
     "Text": {
       "properties": {
-        "id": {
-          "description": "Deprecated field. Do not use. Use <code>label</code> as a key.",
-          "type": "string"
-        },
         "label": {
           "description": "Identifier for the text field, specified by the user who created its associated placement. This field is a key, not content. Do not display it.",
           "type": "string"
@@ -4190,6 +4464,9 @@
       ],
       "type": "object"
     },
+    "TypedMap": {
+      "type": "object"
+    },
     "UnsubscribeRequest": {
       "properties": {
         "campaignId": {
@@ -4388,7 +4665,7 @@
           "type": "array"
         },
         "clientTemplateId": {
-          "description": "Id used by the client to identify a template. If multiple templates exist with the Id, all will be updated",
+          "description": "ID used by the client to identify a template. If multiple templates exist with the ID, all will be updated",
           "type": "string"
         },
         "creatorUserId": {
@@ -4473,10 +4750,63 @@
       ],
       "type": "object"
     },
+    "UpsertEmbeddedTemplateModel": {
+      "properties": {
+        "body": {
+          "description": "Body text of the embedded message",
+          "type": "string"
+        },
+        "clientTemplateId": {
+          "description": "ID used by the client to identify a template. If multiple templates exist with the ID, all will be updated",
+          "type": "string"
+        },
+        "creatorUserId": {
+          "description": "Specify a specific creator user ID (email). The email must be an existing member of the project. Defaults to the organization creator.",
+          "type": "string"
+        },
+        "elements": {
+          "$ref": "#/definitions/Elements",
+          "description": "Elements (buttons, media, text fields) for the embedded message"
+        },
+        "isDefaultLocale": {
+          "description": "Ask your Iterable CSM to enroll you in the beta for this feature.\n\nSets the locale associated with the request content as the template's default. If empty or flexible default locales are not enabled for the project, the project's default locale is assigned.",
+          "type": "boolean"
+        },
+        "locale": {
+          "description": "The locale for the content in this request. Leave empty for default locale. Iterable will automatically send the content with locale that matches a 'locale' field in the user profile.",
+          "type": "string"
+        },
+        "messageTypeId": {
+          "description": "Message type ID",
+          "format": "int32",
+          "type": "integer"
+        },
+        "name": {
+          "description": "Name of the template",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/definitions/JsObject",
+          "description": "Payload"
+        },
+        "placementId": {
+          "description": "Placement ID that this template is associated with",
+          "type": "object"
+        },
+        "title": {
+          "description": "Title of the embedded message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clientTemplateId"
+      ],
+      "type": "object"
+    },
     "UpsertInAppTemplateModel": {
       "properties": {
         "clientTemplateId": {
-          "description": "Id used by the client to identify a template. If multiple templates exist with the Id, all will be updated",
+          "description": "ID used by the client to identify a template. If multiple templates exist with the ID, all will be updated",
           "type": "string"
         },
         "creatorUserId": {
@@ -4553,7 +4883,7 @@
           "type": "boolean"
         },
         "clientTemplateId": {
-          "description": "Id used by the client to identify a template. If multiple templates exist with the Id, all will be updated",
+          "description": "ID used by the client to identify a template. If multiple templates exist with the ID, all will be updated",
           "type": "string"
         },
         "creatorUserId": {
@@ -4644,7 +4974,7 @@
     "UpsertSMSTemplateModel": {
       "properties": {
         "clientTemplateId": {
-          "description": "Id used by the client to identify a template. If multiple templates exist with the Id, all will be updated",
+          "description": "ID used by the client to identify a template. If multiple templates exist with the ID, all will be updated",
           "type": "string"
         },
         "creatorUserId": {
@@ -5061,7 +5391,7 @@
     },
     "/api/campaigns/create": {
       "post": {
-        "description": "Creates a new blast or triggered campaign from an existing template. This endpoint can create email, push notification, web push notification, SMS, and in-app message campaigns, but not embedded message campaigns. <strong>Important note</strong>: Global suppression lists are <strong>not</strong> automatically added to campaigns created from this endpoint. To include a global suppression list, include it in the <code>suppressionListIds</code> request parameter. To learn more about creating a campaign with this API, see our <a href=\"https://support.iterable.com/hc/articles/204780579#post-api-campaigns-create\">API Overview</a>.",
+        "description": "Creates a new blast or triggered campaign from an existing template. This endpoint can create email, push notification, web push notification, SMS, in-app message, and embedded message campaigns. <strong>Important note</strong>: Global suppression lists are <strong>not</strong> automatically added to campaigns created from this endpoint. To include a global suppression list, include it in the <code>suppressionListIds</code> request parameter. To learn more about creating a campaign with this API, see our <a href=\"https://support.iterable.com/hc/articles/204780579#post-api-campaigns-create\">API Overview</a>.",
         "operationId": "create campaign",
         "parameters": [
           {
@@ -8540,7 +8870,7 @@
     },
     "/api/subscriptions/subscribeToDoubleOptIn": {
       "post": {
-        "description": "This endpoint triggers a double opt-in subscription for a user. <br/><br/>Once the user responds to the subscription confirmation message, they will be subscribed to the message types specified in the request body. <br/><br/>This endpoint can only be used with SMS, double opt-in message types. To enable it, contact your customer success manager.<br/><br/>Learn about <a href=\"https://support.iterable.com/hc/articles/29156459027348\">identifying users by <code>userId</code> and <code>email</code></a>.",
+        "description": "This endpoint triggers a double opt-in subscription for a user. <br/><br/>Once the user responds to the subscription confirmation message, they will be subscribed to the message types specified in the request body. <br/><br/>This endpoint can only be used with SMS, double opt-in message types. To enable it, contact your customer success manager.<br/><br/>Learn about <a href=\"https://support.iterable.com/hc/articles/29156459027348\">identifying users by <code>userId</code> and <code>email</code></a>.<br/><br/><b>Response Format Notes:</b><ul><li>202 Accepted: Plain text (e.g., 'Request for double opt-in subscription accepted')</li><li>400 Bad Request (JSON parsing error): JSON <code>{error, message, code, data}</code></li><li>400 Bad Request (validation error): Plain text (e.g., 'User not found for userId: X or email: Y')</li><li>404 Not Found: JSON <code>{msg, code, params}</code> (returned when feature is not enabled)</li><li>500 Internal Server Error: Plain text</li></ul>",
         "operationId": "subscribeSingleUserToDoubleOptIn",
         "parameters": [
           {
@@ -8554,26 +8884,29 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "successful operation",
+          "202": {
+            "description": "Request accepted (plain text: 'Request for double opt-in subscription accepted')"
+          },
+          "400": {
+            "description": "Invalid parameters - returns EITHER JSON {error, message, code, data} for request parsing errors OR plain text for validation errors (e.g., 'User not found for userId: X or email: Y')",
+            "schema": {
+              "$ref": "#/definitions/ErrorHttpResponse"
+            }
+          },
+          "401": {
+            "description": "Invalid API key (JSON: {msg, code, params})",
             "schema": {
               "$ref": "#/definitions/IterableApiResponse"
             }
           },
-          "202": {
-            "description": "Accepted a request to subscribe"
-          },
-          "400": {
-            "description": "Invalid parameters"
-          },
-          "401": {
-            "description": "Invalid API key"
-          },
           "404": {
-            "description": "Endpoint not found"
+            "description": "Endpoint not found (JSON: {msg, code, params})",
+            "schema": {
+              "$ref": "#/definitions/IterableApiResponse"
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error (plain text)"
           }
         },
         "summary": "Trigger a double opt-in subscription flow",
@@ -8875,7 +9208,7 @@
     },
     "/api/templates": {
       "get": {
-        "description": "Get templates for a project. <b>Rate limit</b>: 100 requests/second, per project.",
+        "description": "Get templates for a project. Use <code>page</code> and <code>pageSize</code> parameters to paginate results. If the unpaginated templates API is allowed for your project, then all templates are returned if no pagination parameters are provided. The unpaginated behavior is deprecated and may be removed in the future. <b>Rate limit</b>: 100 requests/second, per project.",
         "operationId": "getTemplates",
         "parameters": [
           {
@@ -8921,6 +9254,35 @@
             "name": "endDateTime",
             "required": false,
             "type": "string"
+          },
+          {
+            "default": 1,
+            "description": "Page number (starting at 1).",
+            "format": "int32",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+            "x-example": 1
+          },
+          {
+            "default": 20,
+            "description": "Number of results to return per page (defaults to 20, maximum of 1000).",
+            "format": "int32",
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "type": "integer",
+            "x-example": 25
+          },
+          {
+            "default": "id",
+            "description": "Field to sort templates by, with optional direction prefix. Use - for descending, + or no prefix for ascending. Templates can be sorted by id, name, createdAt, or updatedAt. Examples: -createdAt, +name, id",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "type": "string",
+            "x-example": "id"
           }
         ],
         "responses": {
@@ -9151,7 +9513,7 @@
     },
     "/api/templates/email/upsert": {
       "post": {
-        "description": "Create email template if it doesn't exist already, otherwise update all email templates which match the name provided.",
+        "description": "Create email template if it doesn't exist already, otherwise update all email templates that match the name provided.",
         "operationId": "upsertEmailTemplate",
         "parameters": [
           {
@@ -9179,6 +9541,120 @@
           }
         },
         "summary": "Create email template",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/templates/embedded/get": {
+      "get": {
+        "description": "<b>Rate limit</b>: 100 requests/second, per project.",
+        "operationId": "getEmbeddedTemplate",
+        "parameters": [
+          {
+            "description": "Template ID",
+            "format": "int64",
+            "in": "query",
+            "name": "templateId",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "Locale of content to get",
+            "in": "query",
+            "name": "locale",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ApiEmbeddedTemplateModel"
+            }
+          },
+          "400": {
+            "description": "Invalid parameters"
+          },
+          "401": {
+            "description": "Invalid API key"
+          },
+          "404": {
+            "description": "Content does not exist for specified locale"
+          }
+        },
+        "summary": "Get an embedded message template",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/templates/embedded/update": {
+      "post": {
+        "description": "",
+        "operationId": "updateEmbeddedTemplate",
+        "parameters": [
+          {
+            "description": "Only the fields specified will be updated",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ApiEmbeddedTemplateModel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/IterableApiResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid parameters"
+          },
+          "401": {
+            "description": "Invalid API key"
+          }
+        },
+        "summary": "Update embedded message template",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/templates/embedded/upsert": {
+      "post": {
+        "description": "Create an embedded message template if it doesn't exist yet, otherwise update all embedded message templates that match the name provided.",
+        "operationId": "upsertEmbeddedTemplate",
+        "parameters": [
+          {
+            "description": "Only the fields specified will be updated",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpsertEmbeddedTemplateModel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/IterableApiResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid parameters"
+          },
+          "401": {
+            "description": "Invalid API key"
+          }
+        },
+        "summary": "Create an embedded message template",
         "tags": [
           "templates"
         ]
@@ -9387,7 +9863,7 @@
     },
     "/api/templates/inapp/upsert": {
       "post": {
-        "description": "Create an in-app template if it doesn't exist yet, otherwise update all in-app templates which match the name provided.",
+        "description": "Create an in-app template if it doesn't exist yet, otherwise update all in-app templates that match the name provided.",
         "operationId": "upsertInAppTemplate",
         "parameters": [
           {
@@ -9536,7 +10012,7 @@
     },
     "/api/templates/push/upsert": {
       "post": {
-        "description": "Create a push template if it doesn't exist, otherwise update all push templates which match the name provided.",
+        "description": "Create a push template if it doesn't exist, otherwise update all push templates that match the name provided.",
         "operationId": "upsertPushTemplate",
         "parameters": [
           {
@@ -9685,7 +10161,7 @@
     },
     "/api/templates/sms/upsert": {
       "post": {
-        "description": "Create an SMS template if it doesn't exist yet, otherwise update all SMS templates which match the name provided.",
+        "description": "Create an SMS template if it doesn't exist yet, otherwise update all SMS templates that match the name provided.",
         "operationId": "upsertSMSTemplate",
         "parameters": [
           {

@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-import { IterableDateTimeSchema, UnixTimestampSchema } from "./common.js";
+import {
+  createSortParamSchema,
+  IterableDateTimeSchema,
+  SortParam,
+  UnixTimestampSchema,
+} from "./common.js";
 
 /**
  * Template management schemas and types
@@ -47,7 +52,7 @@ export const EmailTemplateSchema = BaseTemplateSchema.extend({
     .record(z.string(), z.any())
     .optional()
     .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data."
+      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
     ),
   ccEmails: z.array(z.string()).optional().describe("CC emails"),
   dataFeedId: z
@@ -92,7 +97,7 @@ export const SMSTemplateSchema = BaseTemplateSchema.extend({
     .record(z.string(), z.any())
     .optional()
     .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data."
+      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
     ),
   googleAnalyticsCampaignName: z
     .string()
@@ -121,7 +126,7 @@ export const PushTemplateSchema = BaseTemplateSchema.extend({
     .record(z.string(), z.any())
     .optional()
     .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data."
+      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
     ),
   dataFeedIds: z
     .array(z.number())
@@ -181,7 +186,7 @@ export const InAppTemplateSchema = BaseTemplateSchema.extend({
     .record(z.string(), z.any())
     .optional()
     .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data."
+      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
     ),
   expirationDateTime: z
     .string()
@@ -249,11 +254,49 @@ export type ApiTemplateResponse = z.infer<typeof ApiTemplateResponseSchema>;
 
 export const GetTemplatesResponseSchema = z.object({
   templates: z.array(ApiTemplateResponseSchema),
+  nextPageUrl: z
+    .string()
+    .optional()
+    .describe("The URL to the next page of templates, if applicable"),
+  previousPageUrl: z
+    .string()
+    .optional()
+    .describe("The URL to the previous page of templates, if applicable"),
+  totalTemplatesCount: z
+    .number()
+    .describe(
+      "The total count of templates across all pages for the supplied query"
+    ),
 });
 
 export type GetTemplatesResponse = z.infer<typeof GetTemplatesResponseSchema>;
 
+const TEMPLATE_SORT_FIELDS = [
+  "id",
+  "name",
+  "createdAt",
+  "updatedAt",
+] as const;
+
 export const GetTemplatesParamsSchema = z.object({
+  page: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Page number (starting at 1)"),
+  pageSize: z
+    .number()
+    .int()
+    .min(1)
+    .max(1000)
+    .optional()
+    .describe(
+      "Number of results to return per page (defaults to 20, maximum of 1000)"
+    ),
+  sort: createSortParamSchema(TEMPLATE_SORT_FIELDS).describe(
+    "Field to sort templates by with optional direction (defaults to id ascending)"
+  ),
   templateType: z
     .enum(["Base", "Blast", "Triggered", "Workflow"])
     .optional()
@@ -268,13 +311,11 @@ export const GetTemplatesParamsSchema = z.object({
   endDateTime: IterableDateTimeSchema.optional().describe(
     "Get templates created before this date time (yyyy-MM-dd HH:mm:ss [ZZ])"
   ),
-  limit: z
-    .number()
-    .min(1)
-    .max(1000)
-    .optional()
-    .describe("Maximum number of templates to return"),
 });
+
+export type TemplateSortParam = SortParam<
+  (typeof TEMPLATE_SORT_FIELDS)[number]
+>;
 
 export const GetTemplateParamsSchema = z.object({
   templateId: z.number().describe("Template ID to retrieve"),
@@ -333,7 +374,7 @@ const EmailContentFields = {
     .record(z.string(), z.any())
     .optional()
     .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data."
+      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
     ),
 };
 
@@ -343,7 +384,7 @@ const SMSContentFields = {
     .record(z.string(), z.any())
     .optional()
     .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data."
+      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
     ),
 };
 
@@ -357,7 +398,7 @@ const PushContentFields = {
     .record(z.string(), z.any())
     .optional()
     .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data."
+      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
     ),
 };
 
@@ -370,7 +411,7 @@ const InAppContentFields = {
     .record(z.string(), z.any())
     .optional()
     .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields have higher priority than project-level fields but lower priority than user/event data."
+      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
     ),
 };
 

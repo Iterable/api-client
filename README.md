@@ -1,5 +1,7 @@
 # Iterable API Client
 
+[![npm version](https://img.shields.io/npm/v/@iterable/api.svg)](https://www.npmjs.com/package/@iterable/api)
+
 TypeScript client library for the [Iterable API](https://api.iterable.com/api/docs).
 
 This library is currently in active development. While it is used in production by the [Iterable MCP server](https://github.com/Iterable/mcp-server), it is still considered experimental. We are rapidly iterating on features and improvements, so you may encounter breaking changes or incomplete type definitions.

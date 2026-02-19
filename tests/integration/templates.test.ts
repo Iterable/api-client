@@ -6,6 +6,7 @@ import { EmailTemplateSchema } from "../../src/types/templates.js";
 import {
   cleanupTestUser,
   createTestIdentifiers,
+  retryRateLimited,
   retryWithBackoff,
   uniqueId,
   withTimeout,
@@ -82,31 +83,77 @@ describe("Template Management Integration Tests", () => {
   });
 
   describe("Template Retrieval", () => {
-    it("should retrieve templates", async () => {
-      await withTimeout(client.getTemplates());
+    it("should retrieve templates with default pagination", async () => {
+      const response = await withTimeout(client.getTemplates());
+
+      expect(response).toHaveProperty("templates");
+      expect(response).toHaveProperty("totalTemplatesCount");
+      expect(Array.isArray(response.templates)).toBe(true);
+      expect(typeof response.totalTemplatesCount).toBe("number");
+      // Default page size is 10
+      expect(response.templates.length).toBeLessThanOrEqual(10);
+    });
+
+    it("should retrieve templates with pagination", async () => {
+      const response = await retryRateLimited(
+        () => withTimeout(client.getTemplates({ page: 1, pageSize: 5 })),
+        "Get templates with pagination"
+      );
+
+      expect(response).toHaveProperty("templates");
+      expect(response).toHaveProperty("totalTemplatesCount");
+      expect(Array.isArray(response.templates)).toBe(true);
+      expect(response.templates.length).toBeLessThanOrEqual(5);
+
+      if (response.totalTemplatesCount > 5) {
+        expect(response).toHaveProperty("nextPageUrl");
+        expect(typeof response.nextPageUrl).toBe("string");
+      }
+    });
+
+    it("should retrieve templates sorted by createdAt descending", async () => {
+      const response = await retryRateLimited(
+        () =>
+          withTimeout(
+            client.getTemplates({
+              page: 1,
+              pageSize: 10,
+              sort: { field: "createdAt", direction: "desc" },
+            })
+          ),
+        "Get templates sorted by createdAt descending"
+      );
+
+      expect(response.templates.length).toBeGreaterThan(1);
+
+      for (let i = 0; i < response.templates.length - 1; i++) {
+        expect(response.templates[i]!.createdAt).toBeGreaterThanOrEqual(
+          response.templates[i + 1]!.createdAt
+        );
+      }
     });
 
     it("should retrieve templates with filters", async () => {
       await withTimeout(
-        client.getTemplates({ messageMedium: "Email", limit: 5 })
+        client.getTemplates({ messageMedium: "Email", pageSize: 5 })
       );
       await withTimeout(
-        client.getTemplates({ messageMedium: "SMS", limit: 5 })
+        client.getTemplates({ messageMedium: "SMS", pageSize: 5 })
       );
       await withTimeout(
-        client.getTemplates({ messageMedium: "Push", limit: 5 })
+        client.getTemplates({ messageMedium: "Push", pageSize: 5 })
       );
       await withTimeout(
-        client.getTemplates({ messageMedium: "InApp", limit: 5 })
+        client.getTemplates({ messageMedium: "InApp", pageSize: 5 })
       );
       await withTimeout(
-        client.getTemplates({ templateType: "Triggered", limit: 5 })
+        client.getTemplates({ templateType: "Triggered", pageSize: 5 })
       );
       await withTimeout(
         client.getTemplates({
           messageMedium: "Email",
           templateType: "Base",
-          limit: 3,
+          pageSize: 3,
         })
       );
     });
