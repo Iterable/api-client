@@ -124,7 +124,7 @@ describe("Campaign Management Integration Tests", () => {
       })
     );
 
-    const templatesResponse = await withTimeout(client.getTemplates({ limit: 1 }));
+    const templatesResponse = await withTimeout(client.getTemplates({ pageSize: 1 }));
     if (templatesResponse.templates.length > 0) {
       testTemplateId = templatesResponse.templates[0]!.templateId;
     } else {

@@ -35,7 +35,12 @@ describe("Template Management", () => {
 
   describe("getTemplates", () => {
     it("should get templates with filters", async () => {
-      const mockResponse = { data: { templates: [createMockTemplate()] } };
+      const mockResponse = {
+        data: {
+          templates: [createMockTemplate()],
+          totalTemplatesCount: 1,
+        },
+      };
       const options = {
         templateType: "Triggered" as const,
         messageMedium: "Email" as const,
@@ -45,7 +50,7 @@ describe("Template Management", () => {
       await client.getTemplates(options);
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith(
-        "/api/templates?templateType=Triggered&messageMedium=Email"
+        "/api/templates?page=1&pageSize=10&templateType=Triggered&messageMedium=Email"
       );
     });
   });
