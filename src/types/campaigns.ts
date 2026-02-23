@@ -146,45 +146,55 @@ export const CampaignMetricsResponseSchema = z
   .describe("Parsed campaign metrics data");
 
 // Campaign creation schemas
-export const CreateCampaignParamsSchema = z.object({
-  name: z.string().describe("The name to use in Iterable for the new campaign"),
-  templateId: z
-    .number()
-    .describe("The ID of a template to associate with the new campaign"),
-  listIds: z
-    .array(z.number())
-    .describe(
-      "Array of list IDs to which the campaign should be sent (for blast campaigns)"
-    )
-    .optional(),
-  campaignDataFields: z
-    .record(z.string(), z.any())
-    .optional()
-    .describe(
-      "A JSON object containing campaign-level data fields that are available as merge parameters (for example, {{field}}) during message rendering. These fields are available in templates, data feed URLs, and all other contexts where merge parameters are supported. Campaign-level fields are overridden by user and event data fields of the same name."
+export const CreateCampaignParamsSchema = z
+  .object({
+    name: z
+      .string()
+      .describe("The name to use in Iterable for the new campaign"),
+    templateId: z
+      .number()
+      .describe("The ID of a template to associate with the new campaign"),
+    listIds: z
+      .array(z.number())
+      .describe(
+        "Array of list IDs to which the campaign should be sent (for blast campaigns)"
+      )
+      .optional(),
+    campaignDataFields: z
+      .record(z.string(), z.any())
+      .optional()
+      .describe(
+        "A JSON object containing campaign-level data fields that are available as merge parameters (for example, {{field}}) during message rendering. These fields are available in templates, data feed URLs, and all other contexts where merge parameters are supported. Campaign-level fields are overridden by user and event data fields of the same name."
+      ),
+    sendAt: IterableDateTimeSchema.optional().describe(
+      "Scheduled send time for blast campaign (YYYY-MM-DD HH:MM:SS UTC). Required when listIds is provided."
     ),
-  sendAt: IterableDateTimeSchema.optional().describe(
-    "Scheduled send time for blast campaign (YYYY-MM-DD HH:MM:SS UTC). If not provided, the campaign will be sent immediately."
-  ),
-  sendMode: z
-    .enum(["ProjectTimeZone", "RecipientTimeZone"])
-    .optional()
-    .describe("Send mode for blast campaigns"),
-  startTimeZone: z
-    .string()
-    .optional()
-    .describe("Starting timezone for recipient timezone sends (IANA format)"),
-  defaultTimeZone: z
-    .string()
-    .optional()
-    .describe(
-      "Default timezone for recipients without known timezone (IANA format)"
-    ),
-  suppressionListIds: z
-    .array(z.number())
-    .optional()
-    .describe("Array of suppression list IDs"),
-});
+    sendMode: z
+      .enum(["ProjectTimeZone", "RecipientTimeZone"])
+      .optional()
+      .describe("Send mode for blast campaigns"),
+    startTimeZone: z
+      .string()
+      .optional()
+      .describe(
+        "Starting timezone for recipient timezone sends (IANA format)"
+      ),
+    defaultTimeZone: z
+      .string()
+      .optional()
+      .describe(
+        "Default timezone for recipients without known timezone (IANA format)"
+      ),
+    suppressionListIds: z
+      .array(z.number())
+      .optional()
+      .describe("Array of suppression list IDs"),
+  })
+  .refine((data) => !data.listIds?.length || data.sendAt, {
+    message:
+      "sendAt is required for blast campaigns (when listIds is provided).",
+    path: ["sendAt"],
+  });
 
 export const CreateCampaignResponseSchema = z.object({
   campaignId: z.number(),
