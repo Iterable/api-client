@@ -6,9 +6,10 @@ import {
   ArchiveCampaignsResponseSchema,
   CampaignMetricsResponse,
   CancelCampaignParams,
-  CreateCampaignParams,
+  CreateAndScheduleCampaignParams,
   CreateCampaignResponse,
   CreateCampaignResponseSchema,
+  CreateTriggeredCampaignParams,
   DeactivateTriggeredCampaignParams,
   GetCampaignMetricsParams,
   GetCampaignParams,
@@ -75,8 +76,15 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
       return this.validateResponse(response, GetCampaignResponseSchema);
     }
 
-    async createCampaign(
-      params: CreateCampaignParams
+    async createAndScheduleCampaign(
+      params: CreateAndScheduleCampaignParams
+    ): Promise<CreateCampaignResponse> {
+      const response = await this.client.post("/api/campaigns/create", params);
+      return this.validateResponse(response, CreateCampaignResponseSchema);
+    }
+
+    async createTriggeredCampaign(
+      params: CreateTriggeredCampaignParams
     ): Promise<CreateCampaignResponse> {
       const response = await this.client.post("/api/campaigns/create", params);
       return this.validateResponse(response, CreateCampaignResponseSchema);

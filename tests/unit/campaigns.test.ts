@@ -14,6 +14,8 @@ import {
   ArchiveCampaignsParamsSchema,
   CampaignDetailsSchema,
   CancelCampaignParamsSchema,
+  CreateAndScheduleCampaignParamsSchema,
+  CreateTriggeredCampaignParamsSchema,
   DeactivateTriggeredCampaignParamsSchema,
   GetCampaignMetricsParamsSchema,
   GetCampaignParamsSchema,
@@ -777,6 +779,154 @@ describe("Campaign Management", () => {
       expect(() =>
         SendCampaignParamsSchema.parse({ campaignId: "invalid" })
       ).toThrow(); // invalid type
+    });
+
+    it("should validate createAndScheduleCampaign parameters", () => {
+      // Valid parameters - all required fields
+      expect(() =>
+        CreateAndScheduleCampaignParamsSchema.parse({
+          name: "Test Campaign",
+          templateId: 123,
+          listIds: [456],
+          sendAt: "2026-03-01 10:00:00",
+        })
+      ).not.toThrow();
+
+      // Valid with optional fields
+      expect(() =>
+        CreateAndScheduleCampaignParamsSchema.parse({
+          name: "Test Campaign",
+          templateId: 123,
+          listIds: [456, 789],
+          sendAt: "2026-03-01 10:00:00",
+          sendMode: "RecipientTimeZone",
+          startTimeZone: "America/New_York",
+          defaultTimeZone: "America/Los_Angeles",
+          suppressionListIds: [100],
+          campaignDataFields: { key: "value" },
+        })
+      ).not.toThrow();
+
+      // Missing sendAt
+      expect(() =>
+        CreateAndScheduleCampaignParamsSchema.parse({
+          name: "Test Campaign",
+          templateId: 123,
+          listIds: [456],
+        })
+      ).toThrow();
+
+      // Missing listIds
+      expect(() =>
+        CreateAndScheduleCampaignParamsSchema.parse({
+          name: "Test Campaign",
+          templateId: 123,
+          sendAt: "2026-03-01 10:00:00",
+        })
+      ).toThrow();
+
+      // Empty listIds
+      expect(() =>
+        CreateAndScheduleCampaignParamsSchema.parse({
+          name: "Test Campaign",
+          templateId: 123,
+          listIds: [],
+          sendAt: "2026-03-01 10:00:00",
+        })
+      ).toThrow();
+
+      // Missing name
+      expect(() =>
+        CreateAndScheduleCampaignParamsSchema.parse({
+          templateId: 123,
+          listIds: [456],
+          sendAt: "2026-03-01 10:00:00",
+        })
+      ).toThrow();
+
+      // Missing templateId
+      expect(() =>
+        CreateAndScheduleCampaignParamsSchema.parse({
+          name: "Test Campaign",
+          listIds: [456],
+          sendAt: "2026-03-01 10:00:00",
+        })
+      ).toThrow();
+    });
+
+    it("should validate createTriggeredCampaign parameters", () => {
+      // Valid parameters - required fields only
+      expect(() =>
+        CreateTriggeredCampaignParamsSchema.parse({
+          name: "Test Triggered Campaign",
+          templateId: 123,
+        })
+      ).not.toThrow();
+
+      // Valid with optional campaignDataFields
+      expect(() =>
+        CreateTriggeredCampaignParamsSchema.parse({
+          name: "Test Triggered Campaign",
+          templateId: 123,
+          campaignDataFields: { key: "value" },
+        })
+      ).not.toThrow();
+
+      // Missing name
+      expect(() =>
+        CreateTriggeredCampaignParamsSchema.parse({
+          templateId: 123,
+        })
+      ).toThrow();
+
+      // Missing templateId
+      expect(() =>
+        CreateTriggeredCampaignParamsSchema.parse({
+          name: "Test Triggered Campaign",
+        })
+      ).toThrow();
+    });
+  });
+
+  describe("createAndScheduleCampaign", () => {
+    it("should call campaigns/create endpoint with blast params", async () => {
+      const mockResponse = { data: { campaignId: 12345 } };
+      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+
+      const params = {
+        name: "Test Blast",
+        templateId: 100,
+        listIds: [200],
+        sendAt: "2026-03-01 10:00:00",
+      };
+
+      const result = await client.createAndScheduleCampaign(params);
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/campaigns/create",
+        params
+      );
+      expect(result).toEqual({ campaignId: 12345 });
+    });
+  });
+
+  describe("createTriggeredCampaign", () => {
+    it("should call campaigns/create endpoint with triggered params", async () => {
+      const mockResponse = { data: { campaignId: 67890 } };
+      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+
+      const params = {
+        name: "Test Triggered",
+        templateId: 100,
+      };
+
+      const result = await client.createTriggeredCampaign(params);
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/campaigns/create",
+        params
+      );
+      expect(result).toEqual({ campaignId: 67890 });
     });
   });
 });
