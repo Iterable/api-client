@@ -28,15 +28,26 @@ describe("Campaign Management Integration Tests", () => {
     return parseInt(templateIdMatch[1]);
   };
 
-  const createTestCampaign = async (params: {
+  const createTestBlastCampaign = async (params: {
     name: string;
     templateId: number;
-    listIds?: number[];
-    sendAt?: string;
+    listIds: number[];
+    sendAt: string;
   }) => {
     const createResponse = await retryRateLimited(
-      () => withTimeout(client.createCampaign(params)),
-      `Create campaign: ${params.name}`
+      () => withTimeout(client.createAndScheduleCampaign(params)),
+      `Create blast campaign: ${params.name}`
+    );
+    return createResponse.campaignId;
+  };
+
+  const createTestTriggeredCampaign = async (params: {
+    name: string;
+    templateId: number;
+  }) => {
+    const createResponse = await retryRateLimited(
+      () => withTimeout(client.createTriggeredCampaign(params)),
+      `Create triggered campaign: ${params.name}`
     );
     return createResponse.campaignId;
   };
@@ -464,7 +475,7 @@ describe("Campaign Management Integration Tests", () => {
 
   it("should create and archive a test campaign", async () => {
     const campaignName = uniqueId("MCP-Test-Campaign");
-    const campaignId = await createTestCampaign({
+    const campaignId = await createTestTriggeredCampaign({
       name: campaignName,
       templateId: testTemplateId,
     });
@@ -507,7 +518,7 @@ describe("Campaign Management Integration Tests", () => {
     const sendAtDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const sendAt = sendAtDate.toISOString().replace('T', ' ').substring(0, 19);
 
-    const campaignId = await createTestCampaign({
+    const campaignId = await createTestBlastCampaign({
       name: campaignName,
       templateId: testTemplateId,
       listIds: [testListId],
@@ -546,12 +557,12 @@ describe("Campaign Management Integration Tests", () => {
   }, 60000);
 
   it("should archive multiple campaigns at once", async () => {
-    const campaignId1 = await createTestCampaign({
+    const campaignId1 = await createTestTriggeredCampaign({
       name: uniqueId("MCP-Test-Bulk-1"),
       templateId: testTemplateId,
     });
 
-    const campaignId2 = await createTestCampaign({
+    const campaignId2 = await createTestTriggeredCampaign({
       name: uniqueId("MCP-Test-Bulk-2"),
       templateId: testTemplateId,
     });
@@ -588,7 +599,7 @@ describe("Campaign Management Integration Tests", () => {
   }, 60000);
 
   it("should abort a campaign", async () => {
-    const campaignId = await createTestCampaign({
+    const campaignId = await createTestTriggeredCampaign({
       name: uniqueId("MCP-Test-Abort"),
       templateId: testTemplateId,
     });
@@ -611,8 +622,7 @@ describe("Campaign Management Integration Tests", () => {
   }, 60000);
 
   it("should activate and deactivate a triggered campaign", async () => {
-    // No listIds = Triggered campaign
-    const campaignId = await createTestCampaign({
+    const campaignId = await createTestTriggeredCampaign({
       name: uniqueId("MCP-Test-Triggered"),
       templateId: testTemplateId,
     });
@@ -659,7 +669,7 @@ describe("Campaign Management Integration Tests", () => {
   }, 60000);
 
   it("should trigger a campaign", async () => {
-    const campaignId = await createTestCampaign({
+    const campaignId = await createTestTriggeredCampaign({
       name: uniqueId("MCP-Test-Trigger"),
       templateId: testTemplateId,
     });
@@ -696,7 +706,7 @@ describe("Campaign Management Integration Tests", () => {
     const sendAtDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const sendAt = sendAtDate.toISOString().replace('T', ' ').substring(0, 19);
 
-    const campaignId = await createTestCampaign({
+    const campaignId = await createTestBlastCampaign({
       name: uniqueId("MCP-Test-Send"),
       templateId: testTemplateId,
       listIds: [testListId],

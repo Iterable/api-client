@@ -117,7 +117,6 @@ export type GetCampaignMetricsParams = z.infer<
 export type CampaignMetricsResponse = z.infer<
   typeof CampaignMetricsResponseSchema
 >;
-export type CreateCampaignParams = z.infer<typeof CreateCampaignParamsSchema>;
 export type CreateCampaignResponse = z.infer<
   typeof CreateCampaignResponseSchema
 >;
@@ -145,56 +144,68 @@ export const CampaignMetricsResponseSchema = z
   .array(z.record(z.string(), z.string()))
   .describe("Parsed campaign metrics data");
 
-// Campaign creation schemas
-export const CreateCampaignParamsSchema = z
-  .object({
-    name: z
-      .string()
-      .describe("The name to use in Iterable for the new campaign"),
-    templateId: z
-      .number()
-      .describe("The ID of a template to associate with the new campaign"),
-    listIds: z
-      .array(z.number())
-      .describe(
-        "Array of list IDs to which the campaign should be sent (for blast campaigns)"
-      )
-      .optional(),
-    campaignDataFields: z
-      .record(z.string(), z.any())
-      .optional()
-      .describe(
-        "A JSON object containing campaign-level data fields that are available as merge parameters (for example, {{field}}) during message rendering. These fields are available in templates, data feed URLs, and all other contexts where merge parameters are supported. Campaign-level fields are overridden by user and event data fields of the same name."
-      ),
-    sendAt: IterableDateTimeSchema.optional().describe(
-      "Scheduled send time for blast campaign (YYYY-MM-DD HH:MM:SS UTC). Required when listIds is provided."
+// Shared campaign data fields used by both blast and triggered campaign creation
+const campaignDataFieldsSchema = z
+  .record(z.string(), z.any())
+  .optional()
+  .describe(
+    "A JSON object containing campaign-level data fields that are available as merge parameters (for example, {{field}}) during message rendering. These fields are available in templates, data feed URLs, and all other contexts where merge parameters are supported. Campaign-level fields are overridden by user and event data fields of the same name."
+  );
+
+// Create and schedule a blast campaign
+export const CreateAndScheduleCampaignParamsSchema = z.object({
+  name: z
+    .string()
+    .describe("The name to use in Iterable for the new campaign"),
+  templateId: z
+    .number()
+    .describe("The ID of a template to associate with the new campaign"),
+  listIds: z
+    .array(z.number())
+    .min(1)
+    .describe("Array of list IDs to which the campaign should be sent"),
+  sendAt: IterableDateTimeSchema.describe(
+    "Scheduled send time (YYYY-MM-DD HH:MM:SS UTC)"
+  ),
+  campaignDataFields: campaignDataFieldsSchema,
+  sendMode: z
+    .enum(["ProjectTimeZone", "RecipientTimeZone"])
+    .optional()
+    .describe("Send mode for blast campaigns"),
+  startTimeZone: z
+    .string()
+    .optional()
+    .describe("Starting timezone for recipient timezone sends (IANA format)"),
+  defaultTimeZone: z
+    .string()
+    .optional()
+    .describe(
+      "Default timezone for recipients without known timezone (IANA format)"
     ),
-    sendMode: z
-      .enum(["ProjectTimeZone", "RecipientTimeZone"])
-      .optional()
-      .describe("Send mode for blast campaigns"),
-    startTimeZone: z
-      .string()
-      .optional()
-      .describe(
-        "Starting timezone for recipient timezone sends (IANA format)"
-      ),
-    defaultTimeZone: z
-      .string()
-      .optional()
-      .describe(
-        "Default timezone for recipients without known timezone (IANA format)"
-      ),
-    suppressionListIds: z
-      .array(z.number())
-      .optional()
-      .describe("Array of suppression list IDs"),
-  })
-  .refine((data) => !data.listIds?.length || data.sendAt, {
-    message:
-      "sendAt is required for blast campaigns (when listIds is provided).",
-    path: ["sendAt"],
-  });
+  suppressionListIds: z
+    .array(z.number())
+    .optional()
+    .describe("Array of suppression list IDs"),
+});
+
+export type CreateAndScheduleCampaignParams = z.infer<
+  typeof CreateAndScheduleCampaignParamsSchema
+>;
+
+// Create a triggered campaign
+export const CreateTriggeredCampaignParamsSchema = z.object({
+  name: z
+    .string()
+    .describe("The name to use in Iterable for the new campaign"),
+  templateId: z
+    .number()
+    .describe("The ID of a template to associate with the new campaign"),
+  campaignDataFields: campaignDataFieldsSchema,
+});
+
+export type CreateTriggeredCampaignParams = z.infer<
+  typeof CreateTriggeredCampaignParamsSchema
+>;
 
 export const CreateCampaignResponseSchema = z.object({
   campaignId: z.number(),
