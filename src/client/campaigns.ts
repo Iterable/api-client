@@ -79,7 +79,10 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
     async createBlastCampaign(
       params: CreateBlastCampaignParams
     ): Promise<CreateCampaignResponse> {
-      const response = await this.client.post("/api/campaigns/create", params);
+      const response = await this.client.post("/api/campaigns/create", {
+        ...params,
+        scheduleSend: false,
+      });
       return this.validateResponse(response, CreateCampaignResponseSchema);
     }
 
