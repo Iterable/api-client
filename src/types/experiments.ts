@@ -73,14 +73,12 @@ export const ListExperimentsParamsSchema = z
       .min(1)
       .max(1000)
       .optional()
-      .default(20)
       .describe("Number of results to return (max 1000, default 20)"),
     offset: z
       .number()
       .int()
       .min(0)
       .optional()
-      .default(0)
       .describe("Number of results to skip (default 0)"),
   })
   .describe("Parameters for listing experiments");
