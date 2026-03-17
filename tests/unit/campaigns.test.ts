@@ -788,7 +788,6 @@ describe("Campaign Management", () => {
           name: "Test Campaign",
           templateId: 123,
           listIds: [456],
-          sendAt: "2026-03-01 10:00:00",
         })
       ).not.toThrow();
 
@@ -798,30 +797,16 @@ describe("Campaign Management", () => {
           name: "Test Campaign",
           templateId: 123,
           listIds: [456, 789],
-          sendAt: "2026-03-01 10:00:00",
-          sendMode: "RecipientTimeZone",
-          startTimeZone: "America/New_York",
-          defaultTimeZone: "America/Los_Angeles",
           suppressionListIds: [100],
           campaignDataFields: { key: "value" },
         })
       ).not.toThrow();
-
-      // Missing sendAt
-      expect(() =>
-        CreateBlastCampaignParamsSchema.parse({
-          name: "Test Campaign",
-          templateId: 123,
-          listIds: [456],
-        })
-      ).toThrow();
 
       // Missing listIds
       expect(() =>
         CreateBlastCampaignParamsSchema.parse({
           name: "Test Campaign",
           templateId: 123,
-          sendAt: "2026-03-01 10:00:00",
         })
       ).toThrow();
 
@@ -831,7 +816,6 @@ describe("Campaign Management", () => {
           name: "Test Campaign",
           templateId: 123,
           listIds: [],
-          sendAt: "2026-03-01 10:00:00",
         })
       ).toThrow();
 
@@ -840,7 +824,6 @@ describe("Campaign Management", () => {
         CreateBlastCampaignParamsSchema.parse({
           templateId: 123,
           listIds: [456],
-          sendAt: "2026-03-01 10:00:00",
         })
       ).toThrow();
 
@@ -849,7 +832,6 @@ describe("Campaign Management", () => {
         CreateBlastCampaignParamsSchema.parse({
           name: "Test Campaign",
           listIds: [456],
-          sendAt: "2026-03-01 10:00:00",
         })
       ).toThrow();
     });
@@ -897,14 +879,13 @@ describe("Campaign Management", () => {
         name: "Test Blast",
         templateId: 100,
         listIds: [200],
-        sendAt: "2026-03-01 10:00:00",
       };
 
       const result = await client.createBlastCampaign(params);
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         "/api/campaigns/create",
-        params
+        { ...params, scheduleSend: false }
       );
       expect(result).toEqual({ campaignId: 12345 });
     });

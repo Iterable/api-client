@@ -164,37 +164,14 @@ export const CreateBlastCampaignParamsSchema = z.object({
     .array(z.number())
     .min(1)
     .describe("Array of list IDs to which the campaign should be sent"),
-  scheduleSend: z
-    .boolean()
-    .default(false)
-    .describe(
-      "Whether to immediately schedule the blast campaign for sending. Set to true to schedule the campaign on creation. When false, the campaign can be scheduled later using POST /api/campaigns/{campaignId}/schedule."
-    ),
-  sendAt: IterableDateTimeSchema.describe(
-    "Scheduled send time (YYYY-MM-DD HH:MM:SS UTC)"
-  ),
   campaignDataFields: campaignDataFieldsSchema,
-  sendMode: z
-    .enum(["ProjectTimeZone", "RecipientTimeZone"])
-    .optional()
-    .describe("Send mode for blast campaigns"),
-  startTimeZone: z
-    .string()
-    .optional()
-    .describe("Starting timezone for recipient timezone sends (IANA format)"),
-  defaultTimeZone: z
-    .string()
-    .optional()
-    .describe(
-      "Default timezone for recipients without known timezone (IANA format)"
-    ),
   suppressionListIds: z
     .array(z.number())
     .optional()
     .describe("Array of suppression list IDs"),
 });
 
-export type CreateBlastCampaignParams = z.input<
+export type CreateBlastCampaignParams = z.infer<
   typeof CreateBlastCampaignParamsSchema
 >;
 

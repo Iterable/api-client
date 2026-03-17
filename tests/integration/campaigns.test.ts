@@ -32,7 +32,6 @@ describe("Campaign Management Integration Tests", () => {
     name: string;
     templateId: number;
     listIds: number[];
-    sendAt: string;
   }) => {
     const createResponse = await retryRateLimited(
       () => withTimeout(client.createBlastCampaign(params)),
@@ -514,21 +513,25 @@ describe("Campaign Management Integration Tests", () => {
   it("should create, schedule, and cancel a blast campaign", async () => {
     const campaignName = uniqueId("MCP-Test-Schedule");
 
-    // Schedule for 24 hours in the future (YYYY-MM-DD HH:MM:SS format)
-    const sendAtDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const sendAt = sendAtDate.toISOString().replace('T', ' ').substring(0, 19);
-
     const campaignId = await createTestBlastCampaign({
       name: campaignName,
       templateId: testTemplateId,
       listIds: [testListId],
-      sendAt,
     });
 
     try {
+      // Schedule for 24 hours in the future (ISO-8601 format)
+      const sendAtDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const sendAt = sendAtDate.toISOString();
+
+      await performCampaignAction(
+        () => withTimeout(client.scheduleCampaign({ campaignId, sendAt })),
+        "Schedule blast campaign"
+      );
+
       const campaign = await retryRateLimited(
         () => withTimeout(client.getCampaign({ id: campaignId })),
-        "Get created blast campaign"
+        "Get scheduled blast campaign"
       );
 
       expect(campaign.type).toBe("Blast");
@@ -703,17 +706,22 @@ describe("Campaign Management Integration Tests", () => {
   }, 60000);
 
   it("should send a scheduled campaign immediately", async () => {
-    const sendAtDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const sendAt = sendAtDate.toISOString().replace('T', ' ').substring(0, 19);
-
     const campaignId = await createTestBlastCampaign({
       name: uniqueId("MCP-Test-Send"),
       templateId: testTemplateId,
       listIds: [testListId],
-      sendAt,
     });
 
     try {
+      // Schedule for 24 hours in the future, then send immediately
+      const sendAtDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const sendAt = sendAtDate.toISOString();
+
+      await performCampaignAction(
+        () => withTimeout(client.scheduleCampaign({ campaignId, sendAt })),
+        "Schedule campaign for later"
+      );
+
       const campaign = await retryRateLimited(
         () => withTimeout(client.getCampaign({ id: campaignId })),
         "Get scheduled campaign"
