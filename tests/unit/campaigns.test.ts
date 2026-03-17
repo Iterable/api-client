@@ -14,7 +14,7 @@ import {
   ArchiveCampaignsParamsSchema,
   CampaignDetailsSchema,
   CancelCampaignParamsSchema,
-  CreateAndScheduleCampaignParamsSchema,
+  CreateBlastCampaignParamsSchema,
   CreateTriggeredCampaignParamsSchema,
   DeactivateTriggeredCampaignParamsSchema,
   GetCampaignMetricsParamsSchema,
@@ -781,10 +781,10 @@ describe("Campaign Management", () => {
       ).toThrow(); // invalid type
     });
 
-    it("should validate createAndScheduleCampaign parameters", () => {
+    it("should validate createBlastCampaign parameters", () => {
       // Valid parameters - all required fields
       expect(() =>
-        CreateAndScheduleCampaignParamsSchema.parse({
+        CreateBlastCampaignParamsSchema.parse({
           name: "Test Campaign",
           templateId: 123,
           listIds: [456],
@@ -794,7 +794,7 @@ describe("Campaign Management", () => {
 
       // Valid with optional fields
       expect(() =>
-        CreateAndScheduleCampaignParamsSchema.parse({
+        CreateBlastCampaignParamsSchema.parse({
           name: "Test Campaign",
           templateId: 123,
           listIds: [456, 789],
@@ -809,7 +809,7 @@ describe("Campaign Management", () => {
 
       // Missing sendAt
       expect(() =>
-        CreateAndScheduleCampaignParamsSchema.parse({
+        CreateBlastCampaignParamsSchema.parse({
           name: "Test Campaign",
           templateId: 123,
           listIds: [456],
@@ -818,7 +818,7 @@ describe("Campaign Management", () => {
 
       // Missing listIds
       expect(() =>
-        CreateAndScheduleCampaignParamsSchema.parse({
+        CreateBlastCampaignParamsSchema.parse({
           name: "Test Campaign",
           templateId: 123,
           sendAt: "2026-03-01 10:00:00",
@@ -827,7 +827,7 @@ describe("Campaign Management", () => {
 
       // Empty listIds
       expect(() =>
-        CreateAndScheduleCampaignParamsSchema.parse({
+        CreateBlastCampaignParamsSchema.parse({
           name: "Test Campaign",
           templateId: 123,
           listIds: [],
@@ -837,7 +837,7 @@ describe("Campaign Management", () => {
 
       // Missing name
       expect(() =>
-        CreateAndScheduleCampaignParamsSchema.parse({
+        CreateBlastCampaignParamsSchema.parse({
           templateId: 123,
           listIds: [456],
           sendAt: "2026-03-01 10:00:00",
@@ -846,7 +846,7 @@ describe("Campaign Management", () => {
 
       // Missing templateId
       expect(() =>
-        CreateAndScheduleCampaignParamsSchema.parse({
+        CreateBlastCampaignParamsSchema.parse({
           name: "Test Campaign",
           listIds: [456],
           sendAt: "2026-03-01 10:00:00",
@@ -888,7 +888,7 @@ describe("Campaign Management", () => {
     });
   });
 
-  describe("createAndScheduleCampaign", () => {
+  describe("createBlastCampaign", () => {
     it("should call campaigns/create endpoint with blast params", async () => {
       const mockResponse = { data: { campaignId: 12345 } };
       mockAxiosInstance.post.mockResolvedValue(mockResponse);
@@ -900,7 +900,7 @@ describe("Campaign Management", () => {
         sendAt: "2026-03-01 10:00:00",
       };
 
-      const result = await client.createAndScheduleCampaign(params);
+      const result = await client.createBlastCampaign(params);
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         "/api/campaigns/create",
