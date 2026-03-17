@@ -153,7 +153,7 @@ const campaignDataFieldsSchema = z
   );
 
 // Create and schedule a blast campaign
-export const CreateAndScheduleCampaignParamsSchema = z.object({
+export const CreateBlastCampaignParamsSchema = z.object({
   name: z
     .string()
     .describe("The name to use in Iterable for the new campaign"),
@@ -164,6 +164,12 @@ export const CreateAndScheduleCampaignParamsSchema = z.object({
     .array(z.number())
     .min(1)
     .describe("Array of list IDs to which the campaign should be sent"),
+  scheduleSend: z
+    .boolean()
+    .default(false)
+    .describe(
+      "Whether to immediately schedule the blast campaign for sending. Set to true to schedule the campaign on creation. When false, the campaign can be scheduled later using POST /api/campaigns/{campaignId}/schedule."
+    ),
   sendAt: IterableDateTimeSchema.describe(
     "Scheduled send time (YYYY-MM-DD HH:MM:SS UTC)"
   ),
@@ -188,8 +194,8 @@ export const CreateAndScheduleCampaignParamsSchema = z.object({
     .describe("Array of suppression list IDs"),
 });
 
-export type CreateAndScheduleCampaignParams = z.infer<
-  typeof CreateAndScheduleCampaignParamsSchema
+export type CreateBlastCampaignParams = z.input<
+  typeof CreateBlastCampaignParamsSchema
 >;
 
 // Create a triggered campaign

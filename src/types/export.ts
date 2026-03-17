@@ -60,6 +60,8 @@ export const StartExportJobParamsSchema = z.object({
       "webPushSend",
       "webPushClick",
       "webPushSendSkip",
+      "rcsSend",
+      "rcsSendSkip",
       "emailSubscribe",
       "emailUnSubscribe",
       "purchase",

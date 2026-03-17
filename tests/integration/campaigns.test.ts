@@ -35,7 +35,7 @@ describe("Campaign Management Integration Tests", () => {
     sendAt: string;
   }) => {
     const createResponse = await retryRateLimited(
-      () => withTimeout(client.createAndScheduleCampaign(params)),
+      () => withTimeout(client.createBlastCampaign(params)),
       `Create blast campaign: ${params.name}`
     );
     return createResponse.campaignId;

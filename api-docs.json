@@ -1718,7 +1718,7 @@
           "type": "string"
         },
         "listIds": {
-          "description": "To create a blast campaign, set <code>listIds</code> to an array of list IDs to which the campaign should be sent. To create a triggered campaign, omit <code>listIds</code> from the request body.",
+          "description": "To create a blast campaign, set <code>listIds</code> to a non-empty array of list IDs to which the campaign should be sent. To create a triggered campaign, omit <code>listIds</code> from the request body.",
           "items": {
             "format": "int64",
             "type": "integer"
@@ -1728,6 +1728,11 @@
         "name": {
           "description": "The name to use in Iterable for the new campaign.",
           "type": "string"
+        },
+        "scheduleSend": {
+          "description": "Whether to immediately schedule the blast campaign for sending. Defaults to <code>true</code>. Set to <code>false</code> to create the campaign without scheduling it (the campaign can be scheduled later using <code>POST /api/campaigns/{campaignId}/schedule</code>). Only applies to blast campaigns.",
+          "example": false,
+          "type": "boolean"
         },
         "sendAt": {
           "description": "A scheduled send time for a new blast campaign, up to 21 days in the future. Format: <code>YYYY-MM-DD HH:MM:SS</code> (UTC). For more details, see our <a href=\"https://support.iterable.com/hc/articles/204780579#post-api-campaigns-create\">API Overview</a>.",
@@ -3857,6 +3862,8 @@
             "webPushSend",
             "webPushClick",
             "webPushSendSkip",
+            "rcsSend",
+            "rcsSendSkip",
             "emailSubscribe",
             "emailUnSubscribe",
             "purchase",
@@ -7175,6 +7182,8 @@
               "webPushSend",
               "webPushClick",
               "webPushSendSkip",
+              "rcsSend",
+              "rcsSendSkip",
               "emailSubscribe",
               "emailUnSubscribe",
               "purchase",
@@ -7329,6 +7338,8 @@
               "webPushSend",
               "webPushClick",
               "webPushSendSkip",
+              "rcsSend",
+              "rcsSendSkip",
               "emailSubscribe",
               "emailUnSubscribe",
               "purchase",

@@ -6,7 +6,7 @@ import {
   ArchiveCampaignsResponseSchema,
   CampaignMetricsResponse,
   CancelCampaignParams,
-  CreateAndScheduleCampaignParams,
+  CreateBlastCampaignParams,
   CreateCampaignResponse,
   CreateCampaignResponseSchema,
   CreateTriggeredCampaignParams,
@@ -76,8 +76,8 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
       return this.validateResponse(response, GetCampaignResponseSchema);
     }
 
-    async createAndScheduleCampaign(
-      params: CreateAndScheduleCampaignParams
+    async createBlastCampaign(
+      params: CreateBlastCampaignParams
     ): Promise<CreateCampaignResponse> {
       const response = await this.client.post("/api/campaigns/create", params);
       return this.validateResponse(response, CreateCampaignResponseSchema);
