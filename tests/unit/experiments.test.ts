@@ -252,7 +252,7 @@ describe("Experiment Operations", () => {
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith("/api/experiments");
       expect(result.experiments).toHaveLength(1);
-      expect(result.experiments[0].id).toBe(1);
+      expect(result.experiments[0]?.id).toBe(1);
     });
 
     it("should list experiments with campaign filter", async () => {
@@ -434,8 +434,8 @@ describe("Experiment Operations", () => {
         "/api/experiments/123/variants"
       );
       expect(result.variants).toHaveLength(2);
-      expect(result.variants[0].subject).toBe("Control Subject");
-      expect(result.variants[1].subject).toBe("Variant A Subject");
+      expect(result.variants[0]?.subject).toBe("Control Subject");
+      expect(result.variants[1]?.subject).toBe("Variant A Subject");
     });
 
     it("should handle 404 error for non-existent experiment variants", async () => {
@@ -467,8 +467,8 @@ describe("Experiment Operations", () => {
       const result = await client.getExperimentVariants({ experimentId: 123 });
 
       expect(result.variants).toHaveLength(1);
-      expect(result.variants[0].subject).toBeUndefined();
-      expect(result.variants[0].htmlSource).toBeUndefined();
+      expect(result.variants[0]?.subject).toBeUndefined();
+      expect(result.variants[0]?.htmlSource).toBeUndefined();
     });
   });
 });
