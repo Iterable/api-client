@@ -88,7 +88,7 @@ export async function cleanupTestUser(client: IterableClient, email: string) {
   }
 
   try {
-    await client.deleteUserByEmail(email);
+    await client.deleteUserByEmail({ email });
     logger.debug(`Cleaned up test user: ${email}`);
   } catch (error) {
     logger.warn(`Failed to cleanup user ${email}:`, error);
@@ -286,7 +286,7 @@ export async function waitForUserUpdate(
 ): Promise<UserResponse> {
   return retryWithBackoff(
     async () => {
-      const userResponse = await client.getUserByEmail(email);
+      const userResponse = await client.getUserByEmail({ email });
       const actualDataFields = userResponse.user?.dataFields || {};
       const missingFields = Object.entries(expectedDataFields).filter(
         ([key, expectedValue]) => actualDataFields[key] !== expectedValue

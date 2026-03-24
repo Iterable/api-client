@@ -8,9 +8,13 @@ import {
 } from "../types/lists.js";
 import {
   BulkUpdateUsersParams,
+  DeleteUserByEmailParams,
+  DeleteUserByUserIdParams,
   GetSentMessagesParams,
   GetSentMessagesResponse,
   GetSentMessagesResponseSchema,
+  GetUserByEmailParams,
+  GetUserByIdParams,
   GetUserFieldsResponse,
   GetUserFieldsResponseSchema,
   UpdateEmailParams,
@@ -30,12 +34,10 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
      * Get a user by email address
      */
     async getUserByEmail(
-      email: string,
-      opts?: { signal?: AbortSignal }
+      params: GetUserByEmailParams
     ): Promise<UserResponse> {
       const response = await this.client.get(
-        `/api/users/${encodeURIComponent(email)}`,
-        opts?.signal ? { signal: opts.signal } : {}
+        `/api/users/${encodeURIComponent(params.email)}`
       );
       return this.validateResponse(response, UserResponseSchema);
     }
@@ -44,12 +46,10 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
      * Get a user by userId
      */
     async getUserByUserId(
-      userId: string,
-      opts?: { signal?: AbortSignal }
+      params: GetUserByIdParams
     ): Promise<UserResponse> {
       const response = await this.client.get(
-        `/api/users/byUserId/${encodeURIComponent(userId)}`,
-        opts?.signal ? { signal: opts.signal } : {}
+        `/api/users/byUserId/${encodeURIComponent(params.userId)}`
       );
       return this.validateResponse(response, UserResponseSchema);
     }
@@ -69,9 +69,11 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
      * Delete a user by email address
      * Asynchronous operation - does not prevent future data collection
      */
-    async deleteUserByEmail(email: string): Promise<IterableSuccessResponse> {
+    async deleteUserByEmail(
+      params: DeleteUserByEmailParams
+    ): Promise<IterableSuccessResponse> {
       const response = await this.client.delete(
-        `/api/users/${encodeURIComponent(email)}`
+        `/api/users/${encodeURIComponent(params.email)}`
       );
       return this.validateResponse(response, IterableSuccessResponseSchema);
     }
@@ -81,9 +83,11 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
      * Asynchronous operation - does not prevent future data collection
      * If multiple users share the same userId, they'll all be deleted
      */
-    async deleteUserByUserId(userId: string): Promise<IterableSuccessResponse> {
+    async deleteUserByUserId(
+      params: DeleteUserByUserIdParams
+    ): Promise<IterableSuccessResponse> {
       const response = await this.client.delete(
-        `/api/users/byUserId/${encodeURIComponent(userId)}`
+        `/api/users/byUserId/${encodeURIComponent(params.userId)}`
       );
       return this.validateResponse(response, IterableSuccessResponseSchema);
     }

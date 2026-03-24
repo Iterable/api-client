@@ -60,7 +60,7 @@ describe("Subscription Management Integration Tests", () => {
     // Clean up test list only if we created it
     if (createdTestList) {
       try {
-        await withTimeout(client.deleteList(testListId));
+        await withTimeout(client.deleteList({ listId: testListId }));
       } catch (error) {
         console.warn(`Failed to delete test list ${testListId}:`, error);
       }

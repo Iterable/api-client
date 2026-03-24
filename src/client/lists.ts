@@ -6,6 +6,7 @@ import {
   CreateListParams,
   CreateListResponse,
   CreateListResponseSchema,
+  DeleteListParams,
   GetListPreviewUsersParams,
   GetListPreviewUsersResponse,
   GetListPreviewUsersResponseSchema,
@@ -91,8 +92,8 @@ export function Lists<T extends Constructor<BaseIterableClient>>(Base: T) {
       return this.validateResponse(response, CreateListResponseSchema);
     }
 
-    async deleteList(listId: number): Promise<IterableSuccessResponse> {
-      const response = await this.client.delete(`/api/lists/${listId}`);
+    async deleteList(params: DeleteListParams): Promise<IterableSuccessResponse> {
+      const response = await this.client.delete(`/api/lists/${params.listId}`);
       return this.validateResponse(response, IterableSuccessResponseSchema);
     }
 

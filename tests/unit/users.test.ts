@@ -35,11 +35,10 @@ describe("User Management", () => {
       const mockResponse = { data: { user: { email: emailWithSpecialChars } } };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
-      await client.getUserByEmail(emailWithSpecialChars);
+      await client.getUserByEmail({ email: emailWithSpecialChars });
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith(
-        `/api/users/${encodeURIComponent(emailWithSpecialChars)}`,
-        { signal: undefined }
+        `/api/users/${encodeURIComponent(emailWithSpecialChars)}`
       );
     });
 
@@ -55,7 +54,7 @@ describe("User Management", () => {
       };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
-      const result = await client.getUserByEmail(TEST_USER_EMAIL);
+      const result = await client.getUserByEmail({ email: TEST_USER_EMAIL });
 
       expect(result.user?.email).toBe(TEST_USER_EMAIL);
       expect(result.user?.userId).toBe("user123");
@@ -70,11 +69,10 @@ describe("User Management", () => {
       };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
-      await client.getUserByUserId(userId);
+      await client.getUserByUserId({ userId });
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith(
-        `/api/users/byUserId/${userId}`,
-        {}
+        `/api/users/byUserId/${encodeURIComponent(userId)}`
       );
     });
   });
@@ -85,7 +83,7 @@ describe("User Management", () => {
       const mockResponse = { data: { code: "Success", msg: "Deleted" } };
       mockAxiosInstance.delete.mockResolvedValue(mockResponse);
 
-      await client.deleteUserByEmail(emailWithSpecialChars);
+      await client.deleteUserByEmail({ email: emailWithSpecialChars });
 
       expect(mockAxiosInstance.delete).toHaveBeenCalledWith(
         `/api/users/${encodeURIComponent(emailWithSpecialChars)}`
@@ -99,7 +97,7 @@ describe("User Management", () => {
       const mockResponse = { data: { code: "Success", msg: "Deleted" } };
       mockAxiosInstance.delete.mockResolvedValue(mockResponse);
 
-      await client.deleteUserByUserId(userId);
+      await client.deleteUserByUserId({ userId });
 
       expect(mockAxiosInstance.delete).toHaveBeenCalledWith(
         `/api/users/byUserId/${encodeURIComponent(userId)}`

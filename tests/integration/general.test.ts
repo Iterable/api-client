@@ -53,7 +53,7 @@ describe("General Integration Tests", () => {
 
       // For non-existent users, Iterable API returns an empty object
       const userResponse = await withTimeout(
-        client.getUserByEmail(nonExistentEmail)
+        client.getUserByEmail({ email: nonExistentEmail })
       );
 
       expect(userResponse).toEqual({});

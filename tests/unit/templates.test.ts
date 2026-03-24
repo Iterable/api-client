@@ -132,7 +132,7 @@ describe("Template Management", () => {
       };
       mockAxiosInstance.post.mockResolvedValue(mockResponse);
 
-      const result = await client.deleteTemplates(templateIds);
+      const result = await client.deleteTemplates({ ids: templateIds });
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         "/api/templates/bulkDelete",

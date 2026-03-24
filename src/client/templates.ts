@@ -11,6 +11,7 @@ import {
   BulkDeleteTemplatesResponseSchema,
   EmailTemplate,
   EmailTemplateSchema,
+  GetTemplateByClientIdParams,
   GetTemplateByClientIdResponse,
   GetTemplateByClientIdResponseSchema,
   GetTemplateParams,
@@ -145,12 +146,12 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
     }
 
     async getTemplateByClientId(
-      clientTemplateId: string
+      params: GetTemplateByClientIdParams
     ): Promise<GetTemplateByClientIdResponse> {
       const response = await this.client.get(
         "/api/templates/getByClientTemplateId",
         {
-          params: { clientTemplateId },
+          params: { clientTemplateId: params.clientTemplateId },
         }
       );
       return this.validateResponse(
@@ -174,9 +175,9 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
      * @deprecated Use {@link bulkDeleteTemplates} instead
      */
     async deleteTemplates(
-      templateIds: number[]
+      params: BulkDeleteTemplatesParams
     ): Promise<BulkDeleteTemplatesResponse> {
-      return this.bulkDeleteTemplates({ ids: templateIds });
+      return this.bulkDeleteTemplates(params);
     }
 
     // Email Template Management

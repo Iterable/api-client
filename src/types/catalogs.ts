@@ -109,6 +109,16 @@ export type GetCatalogFieldMappingsParams = z.infer<
 >;
 export type CreateCatalogParams = z.infer<typeof CreateCatalogParamsSchema>;
 
+export const DeleteCatalogParamsSchema = z.object({
+  catalogName: z
+    .string()
+    .max(255)
+    .regex(/^[a-zA-Z0-9-]+$/)
+    .describe("Name of the catalog to delete"),
+});
+
+export type DeleteCatalogParams = z.infer<typeof DeleteCatalogParamsSchema>;
+
 // Catalog items schemas
 export const CatalogItemWithPropertiesSchema = z.object({
   catalogName: z.string(),
