@@ -173,14 +173,14 @@ describe("Template Management Integration Tests", () => {
         templateId = extractTemplateId(createResponse as { msg: string });
 
         const retrievedTemplateResponse = await withTimeout(
-          client.getTemplateByClientId(clientTemplateId)
+          client.getTemplateByClientId({ clientTemplateId })
         );
         expect(retrievedTemplateResponse.templates.length).toBeGreaterThan(0);
         const retrievedTemplate = retrievedTemplateResponse.templates[0]!;
         expect(retrievedTemplate.templateId).toBe(templateId);
       } finally {
         if (templateId) {
-          await withTimeout(client.deleteTemplates([templateId]));
+          await withTimeout(client.deleteTemplates({ ids: [templateId] }));
         }
       }
     });
@@ -285,14 +285,14 @@ describe("Template Management Integration Tests", () => {
               expect(updatedTemplate.name).toBe(updateParams.name);
 
               const deleteResponse = await withTimeout(
-                client.deleteTemplates([templateId])
+                client.deleteTemplates({ ids: [templateId] })
               );
               expect(deleteResponse.success).toContain(templateId);
               templateId = undefined;
             } finally {
               if (templateId) {
                 try {
-                  await withTimeout(client.deleteTemplates([templateId]));
+                  await withTimeout(client.deleteTemplates({ ids: [templateId] }));
                 } catch (cleanupError) {
                   logger.warn(
                     `Failed to cleanup ${type} template ${templateId}:`,
@@ -334,12 +334,12 @@ describe("Template Management Integration Tests", () => {
               expect(result.msg).toContain("Sent proof to");
               expect(result.msg).toContain(testUserEmail);
 
-              await withTimeout(client.deleteTemplates([templateId]));
+              await withTimeout(client.deleteTemplates({ ids: [templateId] }));
               templateId = undefined;
             } catch (error) {
               if (templateId) {
                 try {
-                  await withTimeout(client.deleteTemplates([templateId]));
+                  await withTimeout(client.deleteTemplates({ ids: [templateId] }));
                 } catch (cleanupError) {
                   console.warn(
                     `Failed to cleanup ${type} template ${templateId}:`,
@@ -384,12 +384,12 @@ describe("Template Management Integration Tests", () => {
         expect(typeof previewNoData).toBe("string");
         expect(previewNoData).toContain("Test Email");
 
-        await withTimeout(client.deleteTemplates([templateId]));
+        await withTimeout(client.deleteTemplates({ ids: [templateId] }));
         templateId = undefined;
       } catch (error) {
         if (templateId) {
           try {
-            await withTimeout(client.deleteTemplates([templateId]));
+            await withTimeout(client.deleteTemplates({ ids: [templateId] }));
           } catch (cleanupError) {
             logger.warn(
               `Failed to cleanup email template ${templateId}:`,
@@ -429,12 +429,12 @@ describe("Template Management Integration Tests", () => {
         expect(typeof previewNoData).toBe("string");
         expect(previewNoData).toContain("Test InApp");
 
-        await withTimeout(client.deleteTemplates([templateId]));
+        await withTimeout(client.deleteTemplates({ ids: [templateId] }));
         templateId = undefined;
       } catch (error) {
         if (templateId) {
           try {
-            await withTimeout(client.deleteTemplates([templateId]));
+            await withTimeout(client.deleteTemplates({ ids: [templateId] }));
           } catch (cleanupError) {
             logger.warn(
               `Failed to cleanup in-app template ${templateId}:`,

@@ -68,7 +68,7 @@ describe("User Management Integration Tests", () => {
 
     // ✅ VERIFY: User can be retrieved by email
     const userResponse = await withTimeout(
-      client.getUserByEmail(testUserEmail)
+      client.getUserByEmail({ email: testUserEmail })
     );
     expect(userResponse.user?.email).toBe(testUserEmail);
     expect(userResponse.user?.dataFields?.testField).toBe("email-test");
@@ -89,7 +89,7 @@ describe("User Management Integration Tests", () => {
     });
 
     // ✅ VERIFY: User can be retrieved by userId
-    const userResponse = await withTimeout(client.getUserByUserId(testUserId));
+    const userResponse = await withTimeout(client.getUserByUserId({ userId: testUserId }));
     expect(userResponse.user?.userId).toBe(testUserId);
     expect(userResponse.user?.email).toBe(testUserEmail);
     expect(userResponse.user?.dataFields?.testField).toBe("userId-test");
@@ -239,7 +239,7 @@ describe("User Management Integration Tests", () => {
 
     // Delete the user
     const deleteResponse = await withTimeout(
-      client.deleteUserByEmail(deleteTestEmail)
+      client.deleteUserByEmail({ email: deleteTestEmail })
     );
 
     expect(deleteResponse.code).toBe("Success");
@@ -268,7 +268,7 @@ describe("User Management Integration Tests", () => {
     // Also verify we can retrieve by userId before deleting (with retry for eventual consistency)
     await retryWithBackoff(
       async () => {
-        const userCheck = await client.getUserByUserId(deleteTestUserId);
+        const userCheck = await client.getUserByUserId({ userId: deleteTestUserId });
         if (!userCheck.user?.userId) {
           throw new Error("userId not set on user profile yet");
         }
@@ -283,7 +283,7 @@ describe("User Management Integration Tests", () => {
     // Delete the user by userId with retry in case of timing issues
     const deleteResponse = await retryWithBackoff(
       async () => {
-        return await client.deleteUserByUserId(deleteTestUserId);
+        return await client.deleteUserByUserId({ userId: deleteTestUserId });
       },
       {
         description: `Delete user by userId ${deleteTestUserId}`,
@@ -329,7 +329,7 @@ describe("User Management Integration Tests", () => {
       // Note: There may be some delay in email updates
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const userResponse = await withTimeout(client.getUserByEmail(newEmail));
+      const userResponse = await withTimeout(client.getUserByEmail({ email: newEmail }));
       expect(userResponse.user?.email).toBe(newEmail);
     } finally {
       // Cleanup both possible emails

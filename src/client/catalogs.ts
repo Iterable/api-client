@@ -4,7 +4,11 @@ import {
   CatalogFieldMappingsResponseSchema,
   CatalogItemWithProperties,
   CatalogItemWithPropertiesSchema,
+  CreateCatalogParams,
+  DeleteCatalogItemParams,
+  DeleteCatalogParams,
   GetCatalogFieldMappingsParams,
+  GetCatalogItemParams,
   GetCatalogItemsParams,
   GetCatalogItemsResponse,
   GetCatalogItemsResponseSchema,
@@ -28,9 +32,11 @@ import type { BaseIterableClient } from "./base.js";
  */
 export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
   return class extends Base {
-    async createCatalog(catalogName: string): Promise<IterableSuccessResponse> {
+    async createCatalog(
+      params: CreateCatalogParams
+    ): Promise<IterableSuccessResponse> {
       const response = await this.client.post(
-        `/api/catalogs/${encodeURIComponent(catalogName)}`
+        `/api/catalogs/${encodeURIComponent(params.catalogName)}`
       );
       return this.validateResponse(response, IterableSuccessResponseSchema);
     }
@@ -63,21 +69,19 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
     }
 
     async getCatalogItem(
-      catalogName: string,
-      itemId: string
+      params: GetCatalogItemParams
     ): Promise<CatalogItemWithProperties> {
       const response = await this.client.get(
-        `/api/catalogs/${encodeURIComponent(catalogName)}/items/${encodeURIComponent(itemId)}`
+        `/api/catalogs/${encodeURIComponent(params.catalogName)}/items/${encodeURIComponent(params.itemId)}`
       );
       return this.validateResponse(response, CatalogItemWithPropertiesSchema);
     }
 
     async deleteCatalogItem(
-      catalogName: string,
-      itemId: string
+      params: DeleteCatalogItemParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.delete(
-        `/api/catalogs/${encodeURIComponent(catalogName)}/items/${encodeURIComponent(itemId)}`
+        `/api/catalogs/${encodeURIComponent(params.catalogName)}/items/${encodeURIComponent(params.itemId)}`
       );
       return this.validateResponse(response, IterableSuccessResponseSchema);
     }
@@ -168,9 +172,11 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
     /**
      * Delete a catalog
      */
-    async deleteCatalog(catalogName: string): Promise<IterableSuccessResponse> {
+    async deleteCatalog(
+      params: DeleteCatalogParams
+    ): Promise<IterableSuccessResponse> {
       const response = await this.client.delete(
-        `/api/catalogs/${encodeURIComponent(catalogName)}`
+        `/api/catalogs/${encodeURIComponent(params.catalogName)}`
       );
       return this.validateResponse(response, IterableSuccessResponseSchema);
     }

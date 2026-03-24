@@ -94,7 +94,7 @@ describe("List Management Integration Tests", () => {
       await waitForListMembership(client, listId, testUserEmail, false);
     } finally {
       // Cleanup - delete the list (success indicated by no exception)
-      await withTimeout(client.deleteList(listId));
+      await withTimeout(client.deleteList({ listId }));
     }
   }, 120000);
 
@@ -145,7 +145,7 @@ describe("List Management Integration Tests", () => {
     } finally {
       // Clean up test list
       if (testListId!) {
-        await withTimeout(client.deleteList(testListId));
+        await withTimeout(client.deleteList({ listId: testListId }));
       }
     }
   }, 120000);
@@ -199,7 +199,7 @@ describe("List Management Integration Tests", () => {
     } finally {
       // Clean up test list
       if (testListId!) {
-        await withTimeout(client.deleteList(testListId));
+        await withTimeout(client.deleteList({ listId: testListId }));
       }
     }
   }, 120000);

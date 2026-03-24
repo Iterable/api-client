@@ -25,7 +25,7 @@ describe("Catalog Management Integration Tests", () => {
 
   it("get nonexistent catalog item should 404", async () => {
     await expect(
-      client.getCatalogItem("nonexistent-catalog", "nonexistent-item")
+      client.getCatalogItem({ catalogName: "nonexistent-catalog", itemId: "nonexistent-item" })
     ).rejects.toMatchObject({
       statusCode: 404,
     });
@@ -42,7 +42,7 @@ describe("Catalog Management Integration Tests", () => {
   it("should get catalog field mappings with correct structure", async () => {
     // Create a test catalog
     const catalogName = uniqueId("test-catalog-mappings");
-    await withTimeout(client.createCatalog(catalogName));
+    await withTimeout(client.createCatalog({ catalogName }));
 
     // Add some items to the catalog with various field types
     await withTimeout(
@@ -77,7 +77,7 @@ describe("Catalog Management Integration Tests", () => {
   it("should get catalog items", async () => {
     // Always create a fresh test catalog to ensure clean test state
     const catalogName = uniqueId("test-catalog-items");
-    await withTimeout(client.createCatalog(catalogName));
+    await withTimeout(client.createCatalog({ catalogName }));
 
     const itemId1 = uniqueId("catalog-items-test-1");
     const itemId2 = uniqueId("catalog-items-test-2");
@@ -128,7 +128,7 @@ describe("Catalog Management Integration Tests", () => {
   it("should handle pagination parameters for catalog items", async () => {
     // Always create a fresh test catalog for pagination testing
     const catalogName = uniqueId("test-catalog-pagination");
-    await withTimeout(client.createCatalog(catalogName));
+    await withTimeout(client.createCatalog({ catalogName }));
 
     const itemId1 = uniqueId("pagination-test-1");
     const itemId2 = uniqueId("pagination-test-2");
@@ -196,10 +196,10 @@ describe("Catalog Management Integration Tests", () => {
   it("should delete a catalog", async () => {
     // Create a test catalog to delete
     const catalogName = uniqueId("test-catalog-delete");
-    await withTimeout(client.createCatalog(catalogName));
+    await withTimeout(client.createCatalog({ catalogName }));
 
     // Delete the catalog
-    const result = await withTimeout(client.deleteCatalog(catalogName));
+    const result = await withTimeout(client.deleteCatalog({ catalogName }));
 
     expect(result).toBeDefined();
     expect(result).toHaveProperty("msg");
@@ -212,7 +212,7 @@ describe("Catalog Management Integration Tests", () => {
   it("should update catalog field mappings", async () => {
     // Create a test catalog
     const catalogName = uniqueId("test-catalog-field-mappings");
-    await withTimeout(client.createCatalog(catalogName));
+    await withTimeout(client.createCatalog({ catalogName }));
 
     // Add items with some fields first
     await withTimeout(
@@ -258,7 +258,7 @@ describe("Catalog Management Integration Tests", () => {
   it("should bulk delete catalog items", async () => {
     // Create a test catalog
     const catalogName = uniqueId("test-catalog-bulk-delete");
-    await withTimeout(client.createCatalog(catalogName));
+    await withTimeout(client.createCatalog({ catalogName }));
 
     const itemId1 = uniqueId("bulk-delete-1");
     const itemId2 = uniqueId("bulk-delete-2");
@@ -296,7 +296,7 @@ describe("Catalog Management Integration Tests", () => {
   it("should partial update a catalog item", async () => {
     // Create a test catalog
     const catalogName = uniqueId("test-catalog-patch");
-    await withTimeout(client.createCatalog(catalogName));
+    await withTimeout(client.createCatalog({ catalogName }));
 
     const itemId = uniqueId("patch-item");
 
@@ -345,7 +345,7 @@ describe("Catalog Management Integration Tests", () => {
   it("should replace a catalog item", async () => {
     // Create a test catalog
     const catalogName = uniqueId("test-catalog-replace");
-    await withTimeout(client.createCatalog(catalogName));
+    await withTimeout(client.createCatalog({ catalogName }));
 
     const itemId = uniqueId("replace-item");
 

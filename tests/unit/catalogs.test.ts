@@ -39,7 +39,7 @@ describe("Catalog Operations", () => {
       };
       mockAxiosInstance.post.mockResolvedValue(mockResponse);
 
-      const result = await client.createCatalog("test-catalog");
+      const result = await client.createCatalog({ catalogName: "test-catalog" });
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         "/api/catalogs/test-catalog"
@@ -56,7 +56,7 @@ describe("Catalog Operations", () => {
       };
       mockAxiosInstance.post.mockResolvedValue(mockResponse);
 
-      await client.createCatalog("test catalog/with+special");
+      await client.createCatalog({ catalogName: "test catalog/with+special" });
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         "/api/catalogs/test%20catalog%2Fwith%2Bspecial"
@@ -99,7 +99,10 @@ describe("Catalog Operations", () => {
       };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
-      const result = await client.getCatalogItem("products", "item1");
+      const result = await client.getCatalogItem({
+        catalogName: "products",
+        itemId: "item1",
+      });
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith(
         "/api/catalogs/products/items/item1"
@@ -119,7 +122,10 @@ describe("Catalog Operations", () => {
       };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
-      await client.getCatalogItem("my catalog", "item/1");
+      await client.getCatalogItem({
+        catalogName: "my catalog",
+        itemId: "item/1",
+      });
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith(
         "/api/catalogs/my%20catalog/items/item%2F1"
@@ -137,7 +143,10 @@ describe("Catalog Operations", () => {
       };
       mockAxiosInstance.delete.mockResolvedValue(mockResponse);
 
-      const result = await client.deleteCatalogItem("products", "item1");
+      const result = await client.deleteCatalogItem({
+        catalogName: "products",
+        itemId: "item1",
+      });
 
       expect(mockAxiosInstance.delete).toHaveBeenCalledWith(
         "/api/catalogs/products/items/item1"
@@ -154,7 +163,10 @@ describe("Catalog Operations", () => {
       };
       mockAxiosInstance.delete.mockResolvedValue(mockResponse);
 
-      await client.deleteCatalogItem("my catalog", "item+1");
+      await client.deleteCatalogItem({
+        catalogName: "my catalog",
+        itemId: "item+1",
+      });
 
       expect(mockAxiosInstance.delete).toHaveBeenCalledWith(
         "/api/catalogs/my%20catalog/items/item%2B1"
@@ -427,7 +439,10 @@ describe("Catalog Operations", () => {
       const expectedError = createIterableError(axiosError);
       mockAxiosInstance.get.mockRejectedValue(expectedError);
 
-      const promise = client.getCatalogItem("nonexistent", "item123");
+      const promise = client.getCatalogItem({
+        catalogName: "nonexistent",
+        itemId: "item123",
+      });
       await expect(promise).rejects.toThrow(IterableApiError);
 
       try {
@@ -452,7 +467,7 @@ describe("Catalog Operations", () => {
       };
       mockAxiosInstance.delete.mockResolvedValue(mockResponse);
 
-      const result = await client.deleteCatalog("test-catalog");
+      const result = await client.deleteCatalog({ catalogName: "test-catalog" });
 
       expect(mockAxiosInstance.delete).toHaveBeenCalledWith(
         "/api/catalogs/test-catalog"
@@ -469,7 +484,7 @@ describe("Catalog Operations", () => {
       };
       mockAxiosInstance.delete.mockResolvedValue(mockResponse);
 
-      await client.deleteCatalog("test catalog with spaces");
+      await client.deleteCatalog({ catalogName: "test catalog with spaces" });
 
       expect(mockAxiosInstance.delete).toHaveBeenCalledWith(
         "/api/catalogs/test%20catalog%20with%20spaces"

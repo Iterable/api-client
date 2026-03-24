@@ -161,7 +161,7 @@ describe("Campaign Management Integration Tests", () => {
 
     if (createdTestList) {
       try {
-        await withTimeout(client.deleteList(testListId));
+        await withTimeout(client.deleteList({ listId: testListId }));
       } catch (error) {
         console.warn(`Failed to delete test list ${testListId}:`, error);
       }
@@ -169,7 +169,7 @@ describe("Campaign Management Integration Tests", () => {
 
     if (createdTestTemplate) {
       try {
-        await withTimeout(client.deleteTemplates([testTemplateId]));
+        await withTimeout(client.deleteTemplates({ ids: [testTemplateId] }));
       } catch (error) {
         console.warn(`Failed to delete test template ${testTemplateId}:`, error);
       }

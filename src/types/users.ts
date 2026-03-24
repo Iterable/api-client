@@ -35,6 +35,8 @@ export const GetUserByEmailParamsSchema = z.object({
   email: z.email().describe("Email address of the user to retrieve"),
 });
 
+export type GetUserByEmailParams = z.infer<typeof GetUserByEmailParamsSchema>;
+
 export const UpdateUserParamsSchema = z
   .object({
     email: z.email().optional().describe("User email address"),
@@ -69,6 +71,8 @@ export const GetUserByIdParamsSchema = z.object({
   userId: z.string().describe("User ID to retrieve"),
 });
 
+export type GetUserByIdParams = z.infer<typeof GetUserByIdParamsSchema>;
+
 export const BulkUpdateUsersParamsSchema = z.object({
   users: z
     .array(
@@ -95,9 +99,17 @@ export const DeleteUserByEmailParamsSchema = z.object({
   email: z.email().describe("Email address of the user to delete"),
 });
 
+export type DeleteUserByEmailParams = z.infer<
+  typeof DeleteUserByEmailParamsSchema
+>;
+
 export const DeleteUserByUserIdParamsSchema = z.object({
   userId: z.string().describe("User ID of the user to delete"),
 });
+
+export type DeleteUserByUserIdParams = z.infer<
+  typeof DeleteUserByUserIdParamsSchema
+>;
 
 export const UserEventsResponseSchema = z.object({
   events: z.array(z.record(z.string(), z.any())),
