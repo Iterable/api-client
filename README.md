@@ -23,7 +23,7 @@ const client = new IterableClient({
   apiKey: 'your-api-key'
 });
 
-const user = await client.getUserByEmail('user@example.com');
+const user = await client.getUserByEmail({ email: 'user@example.com' });
 
 // Track event
 await client.trackEvent({
@@ -57,13 +57,15 @@ const client = new IterableClient({
 
 ### Environment Variables
 
-```bash
-ITERABLE_API_KEY=your-api-key     # Required
-ITERABLE_DEBUG=true               # Enable basic debug logging
-ITERABLE_DEBUG_VERBOSE=true       # Enable full body logging (includes PII)
-LOG_LEVEL=info                    # Log level
-LOG_FILE=./logs/iterable.log      # Log to file
-```
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `ITERABLE_API_KEY` | API key (required when using `createIterableConfig()`) | — |
+| `ITERABLE_BASE_URL` | API base URL | `https://api.iterable.com` |
+| `ITERABLE_DEBUG` | Log HTTP requests/responses (headers redacted) to stderr | `false` |
+| `ITERABLE_DEBUG_VERBOSE` | Include response bodies in debug output (may contain PII) | `false` |
+| `LOG_LEVEL` | Log level (`error`, `warn`, `info`, `debug`, etc.) | `debug` when `ITERABLE_DEBUG` is set, otherwise `info` |
+| `LOG_FILE` | Write logs to a file | — |
+| `LOG_STDERR` | Write logs to stderr | `true` |
 
 ## Development
 
