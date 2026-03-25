@@ -24,6 +24,7 @@ import {
   UserResponseSchema,
 } from "../types/users.js";
 import type { BaseIterableClient, Constructor } from "./base.js";
+import { validateResponse } from "./base.js";
 
 /**
  * User management operations mixin
@@ -39,7 +40,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/users/${encodeURIComponent(params.email)}`
       );
-      return this.validateResponse(response, UserResponseSchema);
+      return validateResponse(response, UserResponseSchema);
     }
 
     /**
@@ -51,7 +52,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/users/byUserId/${encodeURIComponent(params.userId)}`
       );
-      return this.validateResponse(response, UserResponseSchema);
+      return validateResponse(response, UserResponseSchema);
     }
 
     /**
@@ -62,7 +63,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       userProfile: UpdateUserParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/users/update", userProfile);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -75,7 +76,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.delete(
         `/api/users/${encodeURIComponent(params.email)}`
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -89,7 +90,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.delete(
         `/api/users/byUserId/${encodeURIComponent(params.userId)}`
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -101,7 +102,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       params: UpdateEmailParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/users/updateEmail", params);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -115,7 +116,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
         "/api/users/updateSubscriptions",
         params
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -125,7 +126,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       params: BulkUpdateUsersParams
     ): Promise<UserBulkUpdateListResponse> {
       const response = await this.client.post("/api/users/bulkUpdate", params);
-      return this.validateResponse(response, UserBulkUpdateListResponseSchema);
+      return validateResponse(response, UserBulkUpdateListResponseSchema);
     }
 
     /**
@@ -169,7 +170,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/users/getSentMessages?${queryParams.toString()}`
       );
-      return this.validateResponse(response, GetSentMessagesResponseSchema);
+      return validateResponse(response, GetSentMessagesResponseSchema);
     }
 
     /**
@@ -177,7 +178,7 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
      */
     async getUserFields(): Promise<GetUserFieldsResponse> {
       const response = await this.client.get("/api/users/getFields");
-      return this.validateResponse(response, GetUserFieldsResponseSchema);
+      return validateResponse(response, GetUserFieldsResponseSchema);
     }
   };
 }

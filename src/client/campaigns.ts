@@ -31,6 +31,7 @@ import {
   IterableSuccessResponseSchema,
 } from "../types/common.js";
 import type { BaseIterableClient, Constructor } from "./base.js";
+import { parseCsv, validateResponse } from "./base.js";
 
 /**
  * Campaigns operations mixin
@@ -62,7 +63,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
         url,
         opts?.signal ? { signal: opts.signal } : {}
       );
-      return this.validateResponse(response, GetCampaignsResponseSchema);
+      return validateResponse(response, GetCampaignsResponseSchema);
     }
 
     async getCampaign(
@@ -73,7 +74,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
         `/api/campaigns/${params.id}`,
         opts?.signal ? { signal: opts.signal } : {}
       );
-      return this.validateResponse(response, GetCampaignResponseSchema);
+      return validateResponse(response, GetCampaignResponseSchema);
     }
 
     async createBlastCampaign(
@@ -83,14 +84,14 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
         ...params,
         scheduleSend: false,
       });
-      return this.validateResponse(response, CreateCampaignResponseSchema);
+      return validateResponse(response, CreateCampaignResponseSchema);
     }
 
     async createTriggeredCampaign(
       params: CreateTriggeredCampaignParams
     ): Promise<CreateCampaignResponse> {
       const response = await this.client.post("/api/campaigns/create", params);
-      return this.validateResponse(response, CreateCampaignResponseSchema);
+      return validateResponse(response, CreateCampaignResponseSchema);
     }
 
     async getChildCampaigns(
@@ -118,7 +119,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
         url,
         opts?.signal ? { signal: opts.signal } : {}
       );
-      return this.validateResponse(response, GetChildCampaignsResponseSchema);
+      return validateResponse(response, GetChildCampaignsResponseSchema);
     }
 
     async getCampaignMetrics(
@@ -139,7 +140,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
       );
 
       // Parse CSV response into array of objects
-      return this.parseCsv(response);
+      return parseCsv(response);
     }
 
     async scheduleCampaign(
@@ -150,7 +151,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
         `/api/campaigns/${campaignId}/schedule`,
         scheduleParams
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -161,7 +162,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
       params: AbortCampaignParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/campaigns/abort", params);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -171,7 +172,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
       params: CancelCampaignParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/campaigns/cancel", params);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -185,7 +186,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
         "/api/campaigns/activateTriggered",
         params
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -199,7 +200,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
         "/api/campaigns/deactivateTriggered",
         params
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -214,7 +215,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
       params: ArchiveCampaignsParams
     ): Promise<ArchiveCampaignsResponse> {
       const response = await this.client.post("/api/campaigns/archive", params);
-      return this.validateResponse(response, ArchiveCampaignsResponseSchema);
+      return validateResponse(response, ArchiveCampaignsResponseSchema);
     }
 
     /**
@@ -224,7 +225,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
       params: TriggerCampaignParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/campaigns/trigger", params);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -236,7 +237,7 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.post(
         `/api/campaigns/${params.campaignId}/send`
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
   };
 }

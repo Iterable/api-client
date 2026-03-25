@@ -13,6 +13,7 @@ import {
   StartExportJobResponseSchema,
 } from "../types/export.js";
 import type { BaseIterableClient, Constructor } from "./base.js";
+import { validateResponse } from "./base.js";
 
 /**
  * Export operations mixin
@@ -28,7 +29,7 @@ export function Export<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/export/jobs?${urlParams.toString()}`
       );
-      return this.validateResponse(response, GetExportJobsResponseSchema);
+      return validateResponse(response, GetExportJobsResponseSchema);
     }
 
     async getExportFiles(
@@ -40,21 +41,21 @@ export function Export<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/export/${params.jobId}/files?${urlParams.toString()}`
       );
-      return this.validateResponse(response, GetExportFilesResponseSchema);
+      return validateResponse(response, GetExportFilesResponseSchema);
     }
 
     async startExportJob(
       params: StartExportJobParams
     ): Promise<StartExportJobResponse> {
       const response = await this.client.post("/api/export/start", params);
-      return this.validateResponse(response, StartExportJobResponseSchema);
+      return validateResponse(response, StartExportJobResponseSchema);
     }
 
     async cancelExportJob(
       params: CancelExportJobParams
     ): Promise<CancelExportJobResponse> {
       const response = await this.client.delete(`/api/export/${params.jobId}`);
-      return this.validateResponse(response, CancelExportJobResponseSchema);
+      return validateResponse(response, CancelExportJobResponseSchema);
     }
   };
 }

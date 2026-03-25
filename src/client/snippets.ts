@@ -15,6 +15,7 @@ import {
   UpdateSnippetResponseSchema,
 } from "../types/snippets.js";
 import type { BaseIterableClient, Constructor } from "./base.js";
+import { validateResponse } from "./base.js";
 
 /**
  * Snippets operations mixin
@@ -28,7 +29,7 @@ export function Snippets<T extends Constructor<BaseIterableClient>>(Base: T) {
         "/api/snippets",
         opts?.signal ? { signal: opts.signal } : {}
       );
-      return this.validateResponse(response, GetSnippetsResponseSchema);
+      return validateResponse(response, GetSnippetsResponseSchema);
     }
 
     async createSnippet(
@@ -36,7 +37,7 @@ export function Snippets<T extends Constructor<BaseIterableClient>>(Base: T) {
       opts?: { signal?: AbortSignal }
     ): Promise<CreateSnippetResponse> {
       const response = await this.client.post("/api/snippets", params, opts);
-      return this.validateResponse(response, CreateSnippetResponseSchema);
+      return validateResponse(response, CreateSnippetResponseSchema);
     }
 
     async getSnippet(
@@ -47,7 +48,7 @@ export function Snippets<T extends Constructor<BaseIterableClient>>(Base: T) {
         `/api/snippets/${encodeURIComponent(String(params.identifier))}`,
         opts?.signal ? { signal: opts.signal } : {}
       );
-      return this.validateResponse(response, GetSnippetResponseSchema);
+      return validateResponse(response, GetSnippetResponseSchema);
     }
 
     async updateSnippet(
@@ -60,7 +61,7 @@ export function Snippets<T extends Constructor<BaseIterableClient>>(Base: T) {
         body,
         opts
       );
-      return this.validateResponse(response, UpdateSnippetResponseSchema);
+      return validateResponse(response, UpdateSnippetResponseSchema);
     }
 
     async deleteSnippet(
@@ -71,7 +72,7 @@ export function Snippets<T extends Constructor<BaseIterableClient>>(Base: T) {
         `/api/snippets/${encodeURIComponent(String(params.identifier))}`,
         opts?.signal ? { signal: opts.signal } : {}
       );
-      return this.validateResponse(response, DeleteSnippetResponseSchema);
+      return validateResponse(response, DeleteSnippetResponseSchema);
     }
   };
 }

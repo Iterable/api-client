@@ -13,6 +13,7 @@ import {
 } from "../types/experiments.js";
 import type { Constructor } from "./base.js";
 import type { BaseIterableClient } from "./base.js";
+import { parseCsv, validateResponse } from "./base.js";
 
 /**
  * Experiments operations mixin
@@ -51,7 +52,7 @@ export function Experiments<T extends Constructor<BaseIterableClient>>(
       });
 
       // Parse CSV response into array of objects
-      return this.parseCsv(response);
+      return parseCsv(response);
     }
 
     async listExperiments(
@@ -83,7 +84,7 @@ export function Experiments<T extends Constructor<BaseIterableClient>>(
       }`;
       const response = await this.client.get(url);
 
-      return this.validateResponse(response, ListExperimentsResponseSchema);
+      return validateResponse(response, ListExperimentsResponseSchema);
     }
 
     async getExperiment(
@@ -92,7 +93,7 @@ export function Experiments<T extends Constructor<BaseIterableClient>>(
       const url = `/api/experiments/${params.experimentId}`;
       const response = await this.client.get(url);
 
-      return this.validateResponse(response, ExperimentDetailsSchema);
+      return validateResponse(response, ExperimentDetailsSchema);
     }
 
     async getExperimentVariants(
@@ -101,7 +102,7 @@ export function Experiments<T extends Constructor<BaseIterableClient>>(
       const url = `/api/experiments/${params.experimentId}/variants`;
       const response = await this.client.get(url);
 
-      return this.validateResponse(
+      return validateResponse(
         response,
         GetExperimentVariantsResponseSchema
       );

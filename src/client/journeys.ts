@@ -10,6 +10,7 @@ import {
   TriggerJourneyParams,
 } from "../types/journeys.js";
 import type { BaseIterableClient, Constructor } from "./base.js";
+import { validateResponse } from "./base.js";
 
 /**
  * Journeys operations mixin
@@ -23,7 +24,7 @@ export function Journeys<T extends Constructor<BaseIterableClient>>(Base: T) {
         "/api/workflows/triggerWorkflow",
         options
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async getJourneys(
@@ -48,7 +49,7 @@ export function Journeys<T extends Constructor<BaseIterableClient>>(Base: T) {
 
       const url = `/api/journeys?${queryParams.toString()}`;
       const response = await this.client.get(url);
-      return this.validateResponse(response, GetJourneysResponseSchema);
+      return validateResponse(response, GetJourneysResponseSchema);
     }
   };
 }
