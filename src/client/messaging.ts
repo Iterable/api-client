@@ -27,6 +27,7 @@ import {
   SendWhatsAppParams,
 } from "../types/messaging.js";
 import type { BaseIterableClient, Constructor } from "./base.js";
+import { validateResponse } from "./base.js";
 
 /**
  * Messaging operations mixin
@@ -38,40 +39,40 @@ export function Messaging<T extends Constructor<BaseIterableClient>>(Base: T) {
       request: SendEmailParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/email/target", request);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async cancelEmail(
       options: CancelEmailParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/email/cancel", options);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     // SMS
     async sendSMS(options: SendSMSParams): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/sms/target", options);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async cancelSMS(
       options: CancelSMSParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/sms/cancel", options);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     // Push Notifications
     async sendPush(options: SendPushParams): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/push/target", options);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async cancelPush(
       options: CancelPushParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/push/cancel", options);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     // Web Push Messages
@@ -79,14 +80,14 @@ export function Messaging<T extends Constructor<BaseIterableClient>>(Base: T) {
       request: SendWebPushParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/webPush/target", request);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async cancelWebPush(
       options: CancelWebPushParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/webPush/cancel", options);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     // WhatsApp Messages
@@ -94,14 +95,14 @@ export function Messaging<T extends Constructor<BaseIterableClient>>(Base: T) {
       request: SendWhatsAppParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/whatsApp/target", request);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async cancelWhatsApp(
       options: CancelWhatsAppParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/whatsApp/cancel", options);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     // In-App Messages
@@ -117,21 +118,21 @@ export function Messaging<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/inApp/getMessages?${params.toString()}`
       );
-      return this.validateResponse(response, GetInAppMessagesResponseSchema);
+      return validateResponse(response, GetInAppMessagesResponseSchema);
     }
 
     async sendInApp(
       options: SendInAppParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/inApp/target", options);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async cancelInApp(
       params: CancelInAppParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/inApp/cancel", params);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     // Embedded Messaging
@@ -163,19 +164,19 @@ export function Messaging<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/embedded-messaging/messages?${queryParams.toString()}`
       );
-      return this.validateResponse(response, EmbeddedMessagesResponseSchema);
+      return validateResponse(response, EmbeddedMessagesResponseSchema);
     }
 
     // get available message channels
     async getChannels(): Promise<ChannelsResponse> {
       const response = await this.client.get("/api/channels");
-      return this.validateResponse(response, ChannelsResponseSchema);
+      return validateResponse(response, ChannelsResponseSchema);
     }
 
     // get all message types within the project
     async getMessageTypes(): Promise<MessageTypesResponse> {
       const response = await this.client.get("/api/messageTypes");
-      return this.validateResponse(response, MessageTypesResponseSchema);
+      return validateResponse(response, MessageTypesResponseSchema);
     }
   };
 }

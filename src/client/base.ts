@@ -32,8 +32,6 @@ export const DEFAULT_USER_AGENT = `iterable-api/${packageJson.version}`;
  */
 export class BaseIterableClient {
   public client: AxiosInstance;
-  #httpAgent?: http.Agent;
-  #httpsAgent?: https.Agent;
 
   constructor(config?: IterableConfig, injectedClient?: AxiosInstance) {
     const clientConfig = config || createIterableConfig();
@@ -41,16 +39,6 @@ export class BaseIterableClient {
     if (injectedClient) {
       this.client = injectedClient;
     } else {
-      // Create agents with keepAlive for better performance
-      this.#httpAgent = new http.Agent({
-        keepAlive: true,
-        keepAliveMsecs: 1000,
-      });
-      this.#httpsAgent = new https.Agent({
-        keepAlive: true,
-        keepAliveMsecs: 1000,
-      });
-
       const defaultHeaders = {
         "Api-Key": clientConfig.apiKey,
         "Content-Type": "application/json",
@@ -64,8 +52,14 @@ export class BaseIterableClient {
           ...(clientConfig.customHeaders || {}),
         },
         timeout: clientConfig.timeout || 30000,
-        httpAgent: this.#httpAgent,
-        httpsAgent: this.#httpsAgent,
+        httpAgent: new http.Agent({
+          keepAlive: true,
+          keepAliveMsecs: 1000,
+        }),
+        httpsAgent: new https.Agent({
+          keepAlive: true,
+          keepAliveMsecs: 1000,
+        }),
         maxRedirects: 5,
       });
     }
@@ -140,86 +134,55 @@ export class BaseIterableClient {
   }
 
   /**
-   * Parse NDJSON (newline-delimited JSON) response into an array of objects
-   */
-  public parseNdjson(data: string): any[] {
-    if (!data) {
-      return [];
-    }
-
-    const lines = data.trim().split("\n");
-    const results: any[] = [];
-
-    for (const line of lines) {
-      const trimmedLine = line.trim();
-      if (trimmedLine) {
-        try {
-          const parsed = JSON.parse(trimmedLine);
-          results.push(parsed);
-        } catch (error) {
-          // Skip invalid JSON lines but log them
-          logger.warn("Failed to parse NDJSON line", {
-            line: trimmedLine,
-            error: error instanceof Error ? error.message : String(error),
-          });
-        }
-      }
-    }
-
-    return results;
-  }
-
-  /**
-   * Parse CSV response into an array of objects using csv-parse library
-   * @throws IterableResponseValidationError if CSV parsing fails
-   */
-  public parseCsv(response: AxiosResponse<string>): Record<string, string>[] {
-    if (!response.data) {
-      return [];
-    }
-
-    try {
-      return csvParse(response.data, {
-        columns: true, // Use first line as headers
-        skip_empty_lines: true,
-        trim: true,
-      });
-    } catch (error) {
-      // Throw validation error to maintain consistent error handling
-      // This allows callers to handle parse failures appropriately
-      throw new IterableResponseValidationError(
-        200,
-        response.data,
-        `CSV parse error: ${error instanceof Error ? error.message : String(error)}`,
-        response.config?.url
-      );
-    }
-  }
-
-  public validateResponse<T>(
-    response: { data: unknown; config?: { url?: string } },
-    schema: z.ZodSchema<T>
-  ): T {
-    const result = schema.safeParse(response.data);
-    if (!result.success) {
-      throw new IterableResponseValidationError(
-        200,
-        response.data,
-        result.error.message,
-        response.config?.url
-      );
-    }
-    return result.data;
-  }
-
-  /**
    * Clean up HTTP agents to prevent Jest from hanging
    * Should be called when the client is no longer needed
    */
   public destroy(): void {
-    this.#httpAgent?.destroy();
-    this.#httpsAgent?.destroy();
+    this.client.defaults.httpAgent?.destroy();
+    this.client.defaults.httpsAgent?.destroy();
   }
+}
+
+/**
+ * @throws IterableResponseValidationError if CSV parsing fails
+ */
+export function parseCsv(
+  response: AxiosResponse<string>
+): Record<string, string>[] {
+  if (!response.data) {
+    return [];
+  }
+
+  try {
+    return csvParse(response.data, {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+    });
+  } catch (error) {
+    throw new IterableResponseValidationError(
+      200,
+      response.data,
+      `CSV parse error: ${error instanceof Error ? error.message : String(error)}`,
+      response.config?.url
+    );
+  }
+}
+
+export function validateResponse<T>(
+  response: { data: unknown; config?: { url?: string } },
+  schema: z.ZodSchema<T>
+): T {
+  const result = schema.safeParse(response.data);
+  if (!result.success) {
+    throw new IterableResponseValidationError(
+      200,
+      response.data,
+      result.error.message,
+      response.config?.url
+    );
+  }
+  return result.data;
 }
 
 // Type helper for mixins

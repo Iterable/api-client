@@ -26,6 +26,7 @@ import {
 } from "../types/common.js";
 import type { Constructor } from "./base.js";
 import type { BaseIterableClient } from "./base.js";
+import { validateResponse } from "./base.js";
 
 /**
  * Catalogs operations mixin
@@ -38,7 +39,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.post(
         `/api/catalogs/${encodeURIComponent(params.catalogName)}`
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async updateCatalogItems(
@@ -65,7 +66,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
           replaceUploadedFieldsOnly: false,
         }
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async getCatalogItem(
@@ -74,7 +75,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/catalogs/${encodeURIComponent(params.catalogName)}/items/${encodeURIComponent(params.itemId)}`
       );
-      return this.validateResponse(response, CatalogItemWithPropertiesSchema);
+      return validateResponse(response, CatalogItemWithPropertiesSchema);
     }
 
     async deleteCatalogItem(
@@ -83,7 +84,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.delete(
         `/api/catalogs/${encodeURIComponent(params.catalogName)}/items/${encodeURIComponent(params.itemId)}`
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -105,12 +106,12 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(url);
       // Check if the API wraps the response in params like other catalog endpoints
       if (response.data && response.data.params) {
-        return this.validateResponse(
+        return validateResponse(
           { data: response.data.params },
           GetCatalogsResponseSchema
         );
       }
-      return this.validateResponse(response, GetCatalogsResponseSchema);
+      return validateResponse(response, GetCatalogsResponseSchema);
     }
 
     /**
@@ -125,12 +126,12 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       // The API returns { msg, code, params: { definedMappings, undefinedFields } }
       // Extract params and validate that directly
       if (response.data && response.data.params) {
-        return this.validateResponse(
+        return validateResponse(
           { data: response.data.params },
           CatalogFieldMappingsResponseSchema
         );
       }
-      return this.validateResponse(response, CatalogFieldMappingsResponseSchema);
+      return validateResponse(response, CatalogFieldMappingsResponseSchema);
     }
 
     /**
@@ -161,12 +162,12 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       // The API returns { msg, code, params: { catalogItemsWithProperties, totalItemsCount } }
       // Extract params and validate that directly
       if (response.data && response.data.params) {
-        return this.validateResponse(
+        return validateResponse(
           { data: response.data.params },
           GetCatalogItemsResponseSchema
         );
       }
-      return this.validateResponse(response, GetCatalogItemsResponseSchema);
+      return validateResponse(response, GetCatalogItemsResponseSchema);
     }
 
     /**
@@ -178,7 +179,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.delete(
         `/api/catalogs/${encodeURIComponent(params.catalogName)}`
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -193,7 +194,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
           mappingsUpdates: params.mappingsUpdates,
         }
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -210,7 +211,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
           },
         }
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -225,7 +226,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
           update: params.update,
         }
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     /**
@@ -240,7 +241,7 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
           value: params.value,
         }
       );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
   };
 }

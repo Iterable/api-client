@@ -225,7 +225,7 @@ export async function retryWithBackoff<T>(
       }
 
       if (!shouldRetryOnError(error)) {
-        throw new Error(formatError(error, `${description} failed`));
+        throw new Error(formatError(error, `${description} failed`), { cause: error });
       }
 
       if (elapsedTime >= timeoutMs) {
@@ -233,7 +233,8 @@ export async function retryWithBackoff<T>(
           formatError(
             error,
             `${description} timeout after ${timeoutMs}ms (${attemptCount} attempts)`
-          )
+          ),
+          { cause: error }
         );
       }
 

@@ -1,3 +1,4 @@
+import type { AxiosInstance } from "axios";
 import { z } from "zod";
 
 import {
@@ -35,88 +36,89 @@ import {
   UpsertPushTemplateParams,
   UpsertSMSTemplateParams,
 } from "../types/templates.js";
-import type { Constructor } from "./base.js";
-import type { BaseIterableClient } from "./base.js";
+import type { BaseIterableClient, Constructor } from "./base.js";
+import { validateResponse } from "./base.js";
+
+async function getTemplateByType<T>(
+  client: AxiosInstance,
+  pathSegment: string,
+  params: GetTemplateParams,
+  schema: z.ZodSchema<T>
+): Promise<T> {
+  const queryParams = new URLSearchParams();
+  queryParams.append("templateId", params.templateId.toString());
+  if (params.locale) {
+    queryParams.append("locale", params.locale);
+  }
+
+  const response = await client.get(
+    `/api/templates/${pathSegment}/get?${queryParams.toString()}`
+  );
+  return validateResponse(response, schema);
+}
+
+async function createTemplateByType<T>(
+  client: AxiosInstance,
+  pathSegment: string,
+  template: T
+): Promise<IterableSuccessResponse> {
+  const response = await client.post(
+    `/api/templates/${pathSegment}/upsert`,
+    template
+  );
+  return validateResponse(response, IterableSuccessResponseSchema);
+}
+
+async function updateTemplateByType<T>(
+  client: AxiosInstance,
+  pathSegment: string,
+  options: T
+): Promise<IterableSuccessResponse> {
+  const response = await client.post(
+    `/api/templates/${pathSegment}/update`,
+    options
+  );
+  return validateResponse(response, IterableSuccessResponseSchema);
+}
+
+async function sendTemplateProof(
+  client: AxiosInstance,
+  pathSegment: string,
+  request: SendTemplateProofParams
+): Promise<IterableSuccessResponse> {
+  const response = await client.post(
+    `/api/templates/${pathSegment}/proof`,
+    request
+  );
+  return validateResponse(response, IterableSuccessResponseSchema);
+}
+
+async function previewTemplate(
+  client: AxiosInstance,
+  pathSegment: string,
+  params: PreviewTemplateParams
+): Promise<string> {
+  const queryParams = new URLSearchParams();
+  queryParams.append("templateId", params.templateId.toString());
+  if (params.locale) {
+    queryParams.append("locale", params.locale);
+  }
+
+  const response = await client.post(
+    `/api/templates/${pathSegment}/preview?${queryParams.toString()}`,
+    params.data || {}
+  );
+  return validateResponse(response, z.string());
+}
 
 /**
  * Templates operations mixin
  */
 export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
   return class extends Base {
-    // Helper methods
-    async #getTemplateByType<T>(
-      pathSegment: string,
-      params: GetTemplateParams,
-      schema: z.ZodSchema<T>
-    ): Promise<T> {
-      const queryParams = new URLSearchParams();
-      queryParams.append("templateId", params.templateId.toString());
-      if (params.locale) {
-        queryParams.append("locale", params.locale);
-      }
-
-      const response = await this.client.get(
-        `/api/templates/${pathSegment}/get?${queryParams.toString()}`
-      );
-      return this.validateResponse(response, schema);
-    }
-
-    async #createTemplateByType<T>(
-      pathSegment: string,
-      template: T
-    ): Promise<IterableSuccessResponse> {
-      const response = await this.client.post(
-        `/api/templates/${pathSegment}/upsert`,
-        template
-      );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
-    }
-
-    async #updateTemplateByType<T>(
-      pathSegment: string,
-      options: T
-    ): Promise<IterableSuccessResponse> {
-      const response = await this.client.post(
-        `/api/templates/${pathSegment}/update`,
-        options
-      );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
-    }
-
-    async #sendTemplateProof(
-      pathSegment: string,
-      request: SendTemplateProofParams
-    ): Promise<IterableSuccessResponse> {
-      const response = await this.client.post(
-        `/api/templates/${pathSegment}/proof`,
-        request
-      );
-      return this.validateResponse(response, IterableSuccessResponseSchema);
-    }
-
-    async #previewTemplate(
-      pathSegment: string,
-      params: PreviewTemplateParams
-    ): Promise<string> {
-      const queryParams = new URLSearchParams();
-      queryParams.append("templateId", params.templateId.toString());
-      if (params.locale) {
-        queryParams.append("locale", params.locale);
-      }
-
-      const response = await this.client.post(
-        `/api/templates/${pathSegment}/preview?${queryParams.toString()}`,
-        params.data || {}
-      );
-      // The API returns raw HTML as a string
-      return this.validateResponse(response, z.string());
-    }
-
-    // General template operations
     async getTemplates(
       options?: GetTemplatesParams
     ): Promise<GetTemplatesResponse> {
-      // Always use pagination with defaults to ensure consistent API behavior
       const page = options?.page ?? 1;
       const pageSize = options?.pageSize ?? 10;
       const sort = options?.sort;
@@ -142,7 +144,7 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
       const response = await this.client.get(
         `/api/templates?${params.toString()}`
       );
-      return this.validateResponse(response, GetTemplatesResponseSchema);
+      return validateResponse(response, GetTemplatesResponseSchema);
     }
 
     async getTemplateByClientId(
@@ -154,10 +156,7 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
           params: { clientTemplateId: params.clientTemplateId },
         }
       );
-      return this.validateResponse(
-        response,
-        GetTemplateByClientIdResponseSchema
-      );
+      return validateResponse(response, GetTemplateByClientIdResponseSchema);
     }
 
     async bulkDeleteTemplates(
@@ -167,7 +166,7 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
         `/api/templates/bulkDelete`,
         params
       );
-      return this.validateResponse(response, BulkDeleteTemplatesResponseSchema);
+      return validateResponse(response, BulkDeleteTemplatesResponseSchema);
     }
 
     /**
@@ -182,102 +181,102 @@ export function Templates<T extends Constructor<BaseIterableClient>>(Base: T) {
 
     // Email Template Management
     async getEmailTemplate(params: GetTemplateParams): Promise<EmailTemplate> {
-      return this.#getTemplateByType("email", params, EmailTemplateSchema);
+      return getTemplateByType(this.client, "email", params, EmailTemplateSchema);
     }
 
     async upsertEmailTemplate(
       template: UpsertEmailTemplateParams
     ): Promise<IterableSuccessResponse> {
-      return this.#createTemplateByType("email", template);
+      return createTemplateByType(this.client, "email", template);
     }
 
     async updateEmailTemplate(
       options: UpdateEmailTemplateParams
     ): Promise<IterableSuccessResponse> {
-      return this.#updateTemplateByType("email", options);
+      return updateTemplateByType(this.client, "email", options);
     }
 
     async sendEmailTemplateProof(
       request: SendTemplateProofParams
     ): Promise<IterableSuccessResponse> {
-      return this.#sendTemplateProof("email", request);
+      return sendTemplateProof(this.client, "email", request);
     }
 
     async previewEmailTemplate(params: PreviewTemplateParams): Promise<string> {
-      return this.#previewTemplate("email", params);
+      return previewTemplate(this.client, "email", params);
     }
 
     // SMS Template Management
     async getSMSTemplate(params: GetTemplateParams): Promise<SMSTemplate> {
-      return this.#getTemplateByType("sms", params, SMSTemplateSchema);
+      return getTemplateByType(this.client, "sms", params, SMSTemplateSchema);
     }
 
     async upsertSMSTemplate(
       template: UpsertSMSTemplateParams
     ): Promise<IterableSuccessResponse> {
-      return this.#createTemplateByType("sms", template);
+      return createTemplateByType(this.client, "sms", template);
     }
 
     async updateSMSTemplate(
       options: UpdateSMSTemplateParams
     ): Promise<IterableSuccessResponse> {
-      return this.#updateTemplateByType("sms", options);
+      return updateTemplateByType(this.client, "sms", options);
     }
 
     async sendSMSTemplateProof(
       request: SendTemplateProofParams
     ): Promise<IterableSuccessResponse> {
-      return this.#sendTemplateProof("sms", request);
+      return sendTemplateProof(this.client, "sms", request);
     }
 
     // Push Template Management
     async getPushTemplate(params: GetTemplateParams): Promise<PushTemplate> {
-      return this.#getTemplateByType("push", params, PushTemplateSchema);
+      return getTemplateByType(this.client, "push", params, PushTemplateSchema);
     }
 
     async upsertPushTemplate(
       template: UpsertPushTemplateParams
     ): Promise<IterableSuccessResponse> {
-      return this.#createTemplateByType("push", template);
+      return createTemplateByType(this.client, "push", template);
     }
 
     async updatePushTemplate(
       options: UpdatePushTemplateParams
     ): Promise<IterableSuccessResponse> {
-      return this.#updateTemplateByType("push", options);
+      return updateTemplateByType(this.client, "push", options);
     }
 
     async sendPushTemplateProof(
       request: SendTemplateProofParams
     ): Promise<IterableSuccessResponse> {
-      return this.#sendTemplateProof("push", request);
+      return sendTemplateProof(this.client, "push", request);
     }
 
     // In-App Template Management
     async getInAppTemplate(params: GetTemplateParams): Promise<InAppTemplate> {
-      return this.#getTemplateByType("inapp", params, InAppTemplateSchema);
+      return getTemplateByType(this.client, "inapp", params, InAppTemplateSchema);
     }
 
     async upsertInAppTemplate(
       template: UpsertInAppTemplateParams
     ): Promise<IterableSuccessResponse> {
-      return this.#createTemplateByType("inapp", template);
+      return createTemplateByType(this.client, "inapp", template);
     }
 
     async updateInAppTemplate(
       options: UpdateInAppTemplateParams
     ): Promise<IterableSuccessResponse> {
-      return this.#updateTemplateByType("inapp", options);
+      return updateTemplateByType(this.client, "inapp", options);
     }
 
     async sendInAppTemplateProof(
       request: SendTemplateProofParams
     ): Promise<IterableSuccessResponse> {
-      return this.#sendTemplateProof("inapp", request);
+      return sendTemplateProof(this.client, "inapp", request);
     }
 
     async previewInAppTemplate(params: PreviewTemplateParams): Promise<string> {
-      return this.#previewTemplate("inapp", params);
+      return previewTemplate(this.client, "inapp", params);
     }
   };
 }

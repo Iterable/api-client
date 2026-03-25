@@ -7,6 +7,7 @@ import {
 } from "../types/webhooks.js";
 import type { Constructor } from "./base.js";
 import type { BaseIterableClient } from "./base.js";
+import { validateResponse } from "./base.js";
 
 /**
  * Webhooks operations mixin
@@ -15,12 +16,12 @@ export function Webhooks<T extends Constructor<BaseIterableClient>>(Base: T) {
   return class extends Base {
     async getWebhooks(): Promise<GetWebhooksResponse> {
       const response = await this.client.get("/api/webhooks");
-      return this.validateResponse(response, GetWebhooksResponseSchema);
+      return validateResponse(response, GetWebhooksResponseSchema);
     }
 
     async updateWebhook(options: UpdateWebhookParams): Promise<Webhook> {
       const response = await this.client.post("/api/webhooks", options);
-      return this.validateResponse(response, WebhookSchema);
+      return validateResponse(response, WebhookSchema);
     }
 
     // NOTE: Webhook creation/deletion not supported by Iterable REST API

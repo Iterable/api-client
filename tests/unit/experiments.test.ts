@@ -45,8 +45,6 @@ describe("Experiment Operations", () => {
       ];
 
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
-      // Mock the parseCsv method
-      jest.spyOn(client as any, "parseCsv").mockReturnValue(expectedParsedData);
 
       const result = await client.getExperimentMetrics();
 
@@ -80,7 +78,6 @@ describe("Experiment Operations", () => {
       ];
 
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
-      jest.spyOn(client as any, "parseCsv").mockReturnValue(expectedParsedData);
 
       const result = await client.getExperimentMetrics({
         experimentId: [123, 125],
@@ -109,7 +106,6 @@ describe("Experiment Operations", () => {
       ];
 
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
-      jest.spyOn(client as any, "parseCsv").mockReturnValue(expectedParsedData);
 
       const result = await client.getExperimentMetrics({
         campaignId: [456],
@@ -138,7 +134,6 @@ describe("Experiment Operations", () => {
       ];
 
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
-      jest.spyOn(client as any, "parseCsv").mockReturnValue(expectedParsedData);
 
       const result = await client.getExperimentMetrics({
         startDateTime: "2024-01-01T00:00:00Z",
@@ -175,7 +170,6 @@ describe("Experiment Operations", () => {
       ];
 
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
-      jest.spyOn(client as any, "parseCsv").mockReturnValue(expectedParsedData);
 
       const result = await client.getExperimentMetrics({
         experimentId: [123, 124],
@@ -203,7 +197,6 @@ describe("Experiment Operations", () => {
       const expectedParsedData: any[] = [];
 
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
-      jest.spyOn(client as any, "parseCsv").mockReturnValue(expectedParsedData);
 
       const result = await client.getExperimentMetrics({
         experimentId: [],

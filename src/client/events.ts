@@ -14,6 +14,7 @@ import {
 } from "../types/events.js";
 import type { Constructor } from "./base.js";
 import type { BaseIterableClient } from "./base.js";
+import { validateResponse } from "./base.js";
 
 /**
  * Events operations mixin
@@ -24,14 +25,14 @@ export function Events<T extends Constructor<BaseIterableClient>>(Base: T) {
       event: TrackEventParams
     ): Promise<IterableSuccessResponse> {
       const response = await this.client.post("/api/events/track", event);
-      return this.validateResponse(response, IterableSuccessResponseSchema);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
 
     async trackBulkEvents(
       params: TrackBulkEventsParams
     ): Promise<BulkTrackResponse> {
       const response = await this.client.post("/api/events/trackBulk", params);
-      return this.validateResponse(response, BulkTrackResponseSchema);
+      return validateResponse(response, BulkTrackResponseSchema);
     }
 
     /**
@@ -48,7 +49,7 @@ export function Events<T extends Constructor<BaseIterableClient>>(Base: T) {
         `/api/events/${encodeURIComponent(options.email)}${params.toString() ? `?${params.toString()}` : ""}`,
         opts?.signal ? { signal: opts.signal } : {}
       );
-      return this.validateResponse(
+      return validateResponse(
         response,
         GetUserEventsByEmailResponseSchema
       );
@@ -68,7 +69,7 @@ export function Events<T extends Constructor<BaseIterableClient>>(Base: T) {
         `/api/events/byUserId/${encodeURIComponent(options.userId)}${params.toString() ? `?${params.toString()}` : ""}`,
         opts?.signal ? { signal: opts.signal } : {}
       );
-      return this.validateResponse(
+      return validateResponse(
         response,
         GetUserEventsByUserIdResponseSchema
       );
