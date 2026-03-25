@@ -5231,6 +5231,17 @@
             "required": false,
             "type": "string",
             "x-example": "id"
+          },
+          {
+            "collectionFormat": "multi",
+            "description": "Filter campaigns by state. Can be specified multiple times to filter by multiple states. Valid states: Draft, Ready, Scheduled, Running, Finished, Starting, Aborted, Recurring, Archived. Example: ?campaignState=Ready&campaignState=Running",
+            "in": "query",
+            "items": {
+              "type": "string"
+            },
+            "name": "campaignState",
+            "required": false,
+            "type": "array"
           }
         ],
         "responses": {
@@ -5567,6 +5578,17 @@
             "required": false,
             "type": "string",
             "x-example": "id"
+          },
+          {
+            "collectionFormat": "multi",
+            "description": "Filter campaigns by state. Can be specified multiple times to filter by multiple states. Valid states: Draft, Ready, Scheduled, Running, Finished, Starting, Aborted, Recurring, Archived. Example: ?campaignState=Ready&campaignState=Running",
+            "in": "query",
+            "items": {
+              "type": "string"
+            },
+            "name": "campaignState",
+            "required": false,
+            "type": "array"
           }
         ],
         "responses": {

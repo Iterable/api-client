@@ -5,6 +5,7 @@ import {
   ArchiveCampaignsResponse,
   ArchiveCampaignsResponseSchema,
   CampaignMetricsResponse,
+  CampaignState,
   CancelCampaignParams,
   CreateBlastCampaignParams,
   CreateCampaignResponse,
@@ -56,6 +57,12 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
       const sortString = formatSortParam(sort);
       if (sortString) {
         queryParams.append("sort", sortString);
+      }
+
+      if (params?.campaignState) {
+        params.campaignState.forEach((state: CampaignState) =>
+          queryParams.append("campaignState", state)
+        );
       }
 
       const url = `/api/campaigns?${queryParams.toString()}`;
