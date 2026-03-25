@@ -12,21 +12,25 @@ import {
  * Campaign management schemas and types
  */
 
+export const CampaignStateSchema = z.enum([
+  "Draft",
+  "Ready",
+  "Scheduled",
+  "Running",
+  "Finished",
+  "Starting",
+  "Aborted",
+  "Recurring",
+  "Archived",
+]);
+
+export type CampaignState = z.infer<typeof CampaignStateSchema>;
+
 export const CampaignDetailsSchema = z.object({
   id: z.number(),
   name: z.string(),
   type: z.enum(["Blast", "Triggered"]),
-  campaignState: z.enum([
-    "Draft",
-    "Ready",
-    "Scheduled",
-    "Running",
-    "Finished",
-    "Starting",
-    "Aborted",
-    "Recurring",
-    "Archived",
-  ]),
+  campaignState: CampaignStateSchema,
   messageMedium: z.string(),
   createdAt: UnixTimestampSchema,
   updatedAt: UnixTimestampSchema,
@@ -74,6 +78,12 @@ export const GetCampaignsParamsSchema = z.object({
   sort: createSortParamSchema(CAMPAIGN_SORT_FIELDS).describe(
     "Field to sort campaigns by with optional direction (defaults to id ascending)"
   ),
+  campaignState: z
+    .array(CampaignStateSchema)
+    .optional()
+    .describe(
+      "Filter campaigns by state. Can specify multiple states. Valid states: Draft, Ready, Scheduled, Running, Finished, Starting, Aborted, Recurring, Archived"
+    ),
 });
 
 export type GetCampaignsParams = z.infer<typeof GetCampaignsParamsSchema>;
