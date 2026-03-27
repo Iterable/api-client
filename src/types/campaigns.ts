@@ -81,9 +81,7 @@ export const GetCampaignsParamsSchema = z.object({
   campaignState: z
     .array(CampaignStateSchema)
     .optional()
-    .describe(
-      "Filter campaigns by state. Can specify multiple states. Valid states: Draft, Ready, Scheduled, Running, Finished, Starting, Aborted, Recurring, Archived"
-    ),
+    .describe("Filter campaigns by state"),
 });
 
 export type GetCampaignsParams = z.infer<typeof GetCampaignsParamsSchema>;

@@ -10,7 +10,7 @@ export const BulkUpdateSubscriptionsParamsSchema = z.object({
   subscriptionGroupId: z.number().describe("Subscription Group Id"),
   action: z
     .enum(["subscribe", "unsubscribe"])
-    .describe("Action to perform: subscribe or unsubscribe"),
+    .describe("Action to perform"),
   users: z
     .array(z.email())
     .optional()
