@@ -17,6 +17,7 @@ import {
   GetUserByIdParams,
   GetUserFieldsResponse,
   GetUserFieldsResponseSchema,
+  MergeUsersParams,
   UpdateEmailParams,
   UpdateUserParams,
   UpdateUserSubscriptionsParams,
@@ -179,6 +180,18 @@ export function Users<T extends Constructor<BaseIterableClient>>(Base: T) {
     async getUserFields(): Promise<GetUserFieldsResponse> {
       const response = await this.client.get("/api/users/getFields");
       return validateResponse(response, GetUserFieldsResponseSchema);
+    }
+
+    /**
+     * Merge two user profiles into one.
+     * All profile data and events from the source are migrated to the destination.
+     * Returns an error if the source user does not exist.
+     */
+    async mergeUsers(
+      params: MergeUsersParams
+    ): Promise<IterableSuccessResponse> {
+      const response = await this.client.post("/api/users/merge", params);
+      return validateResponse(response, IterableSuccessResponseSchema);
     }
   };
 }
