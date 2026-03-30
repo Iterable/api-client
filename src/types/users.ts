@@ -277,3 +277,54 @@ export const UpdateUserSubscriptionsParamsSchema = z
 export type UpdateUserSubscriptionsParams = z.infer<
   typeof UpdateUserSubscriptionsParamsSchema
 >;
+
+export const ArrayMergeSchema = z.object({
+  field: z
+    .string()
+    .describe(
+      "Top-level user profile field containing an array to merge from source to destination"
+    ),
+  dedupeBy: z
+    .string()
+    .optional()
+    .describe(
+      "Field on array objects used for de-duplication during merge (only for arrays of objects)"
+    ),
+});
+
+export const MergeUsersParamsSchema = z
+  .object({
+    sourceEmail: z
+      .email()
+      .optional()
+      .describe("Email of the source user profile to merge from"),
+    sourceUserId: z
+      .string()
+      .optional()
+      .describe("User ID of the source user profile to merge from"),
+    destinationEmail: z
+      .email()
+      .optional()
+      .describe("Email of the destination user profile to merge into"),
+    destinationUserId: z
+      .string()
+      .optional()
+      .describe("User ID of the destination user profile to merge into"),
+    arrayMerge: z
+      .array(ArrayMergeSchema)
+      .optional()
+      .describe(
+        "Array fields whose contents should be merged (only custom arrays, not Iterable-managed ones like devices)"
+      ),
+  })
+  .refine(
+    (data) => data.sourceEmail || data.sourceUserId,
+    "Either sourceEmail or sourceUserId must be provided"
+  )
+  .refine(
+    (data) => data.destinationEmail || data.destinationUserId,
+    "Either destinationEmail or destinationUserId must be provided"
+  );
+
+export type MergeUsersParams = z.infer<typeof MergeUsersParamsSchema>;
+export type ArrayMerge = z.infer<typeof ArrayMergeSchema>;

@@ -10,6 +10,7 @@ import {
 import { IterableClient } from "../../src/client";
 import {
   GetUserByEmailParamsSchema,
+  MergeUsersParamsSchema,
   UpdateEmailParamsSchema,
   UpdateUserParamsSchema,
   UpdateUserSubscriptionsParamsSchema,
@@ -267,6 +268,78 @@ describe("User Management", () => {
     });
   });
 
+  describe("mergeUsers", () => {
+    it("should call merge endpoint with email-based params", async () => {
+      const params = {
+        sourceEmail: "source@example.com",
+        destinationEmail: "dest@example.com",
+      };
+      const mockResponse = { data: { code: "Success", msg: "Merged" } };
+      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+
+      const result = await client.mergeUsers(params);
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/users/merge",
+        params
+      );
+      expect(result.code).toBe("Success");
+    });
+
+    it("should call merge endpoint with userId-based params", async () => {
+      const params = {
+        sourceUserId: "src-user-123",
+        destinationUserId: "dst-user-456",
+      };
+      const mockResponse = { data: { code: "Success", msg: "Merged" } };
+      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+
+      const result = await client.mergeUsers(params);
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/users/merge",
+        params
+      );
+      expect(result.code).toBe("Success");
+    });
+
+    it("should support mixed email/userId identifiers", async () => {
+      const params = {
+        sourceEmail: "source@example.com",
+        destinationUserId: "dst-user-456",
+      };
+      const mockResponse = { data: { code: "Success", msg: "Merged" } };
+      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+
+      await client.mergeUsers(params);
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/users/merge",
+        params
+      );
+    });
+
+    it("should support arrayMerge parameter", async () => {
+      const params = {
+        sourceEmail: "source@example.com",
+        destinationEmail: "dest@example.com",
+        arrayMerge: [
+          { field: "purchaseHistory", dedupeBy: "orderId" },
+          { field: "tags" },
+        ],
+      };
+      const mockResponse = { data: { code: "Success", msg: "Merged" } };
+      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+
+      await client.mergeUsers(params);
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/users/merge",
+        params
+      );
+    });
+  });
+
   describe("Schema Validation", () => {
     it("should validate get_user_by_email parameters", () => {
       expect(() =>
@@ -368,6 +441,63 @@ describe("User Management", () => {
           validateChannelAlignment: false,
         })
       ).not.toThrow();
+    });
+
+    it("should validate mergeUsers parameters", () => {
+      // Valid: email to email
+      expect(() =>
+        MergeUsersParamsSchema.parse({
+          sourceEmail: "source@example.com",
+          destinationEmail: "dest@example.com",
+        })
+      ).not.toThrow();
+
+      // Valid: userId to userId
+      expect(() =>
+        MergeUsersParamsSchema.parse({
+          sourceUserId: "src-123",
+          destinationUserId: "dst-456",
+        })
+      ).not.toThrow();
+
+      // Valid: email to userId (mixed)
+      expect(() =>
+        MergeUsersParamsSchema.parse({
+          sourceEmail: "source@example.com",
+          destinationUserId: "dst-456",
+        })
+      ).not.toThrow();
+
+      // Valid: with arrayMerge
+      expect(() =>
+        MergeUsersParamsSchema.parse({
+          sourceEmail: "source@example.com",
+          destinationEmail: "dest@example.com",
+          arrayMerge: [{ field: "tags" }, { field: "orders", dedupeBy: "id" }],
+        })
+      ).not.toThrow();
+
+      // Invalid: missing source
+      expect(() =>
+        MergeUsersParamsSchema.parse({
+          destinationEmail: "dest@example.com",
+        })
+      ).toThrow();
+
+      // Invalid: missing destination
+      expect(() =>
+        MergeUsersParamsSchema.parse({
+          sourceEmail: "source@example.com",
+        })
+      ).toThrow();
+
+      // Invalid: bad email format
+      expect(() =>
+        MergeUsersParamsSchema.parse({
+          sourceEmail: "not-an-email",
+          destinationEmail: "dest@example.com",
+        })
+      ).toThrow();
     });
   });
 });

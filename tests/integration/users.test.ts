@@ -362,6 +362,45 @@ describe("User Management Integration Tests", () => {
     expect(updateResponse.code).toBe("Success");
   });
 
+  it("should merge two user profiles", async () => {
+    const mergeTestId = uniqueId();
+    const sourceEmail = `merge-source+${mergeTestId}@example.com`;
+    const destEmail = `merge-dest+${mergeTestId}@example.com`;
+
+    try {
+      // Create source user
+      await withTimeout(
+        client.updateUser({
+          email: sourceEmail,
+          dataFields: { mergeTest: true, sourceOnly: "from-source" },
+        })
+      );
+      await waitForUserUpdate(client, sourceEmail, { mergeTest: true });
+
+      // Create destination user
+      await withTimeout(
+        client.updateUser({
+          email: destEmail,
+          dataFields: { mergeTest: true, destOnly: "from-dest" },
+        })
+      );
+      await waitForUserUpdate(client, destEmail, { mergeTest: true });
+
+      // Merge source into destination
+      const mergeResponse = await withTimeout(
+        client.mergeUsers({
+          sourceEmail,
+          destinationEmail: destEmail,
+        })
+      );
+
+      expect(mergeResponse.code).toBe("Success");
+    } finally {
+      await cleanupTestUser(client, sourceEmail);
+      await cleanupTestUser(client, destEmail);
+    }
+  });
+
   it("should update user subscriptions by userId", async () => {
     // Ensure user exists with userId
     await withTimeout(
