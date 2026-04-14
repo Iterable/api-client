@@ -239,13 +239,17 @@ describe("Campaign Management", () => {
     it("should parse CSV metrics correctly", async () => {
       const mockCsvData = "id,sent,delivered\n12345,1000,950\n12346,500,475";
       const mockResponse = { data: mockCsvData };
-      const options = { campaignId: 12345, startDateTime: "2023-01-01" };
+      const options = {
+        campaignId: 12345,
+        startDateTime: "2023-01-01",
+        endDateTime: "2023-12-31",
+      };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
       const result = await client.getCampaignMetrics(options);
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith(
-        "/api/campaigns/metrics?campaignId=12345&startDateTime=2023-01-01",
+        "/api/campaigns/metrics?campaignId=12345&startDateTime=2023-01-01&endDateTime=2023-12-31",
         { responseType: "text" }
       );
       expect(result).toHaveLength(2);
@@ -261,7 +265,11 @@ describe("Campaign Management", () => {
       const mockResponse = { data: "" };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
-      const result = await client.getCampaignMetrics({ campaignId: 12345 });
+      const result = await client.getCampaignMetrics({
+        campaignId: 12345,
+        startDateTime: "2023-01-01",
+        endDateTime: "2023-12-31",
+      });
 
       expect(result).toEqual([]);
     });
@@ -270,7 +278,11 @@ describe("Campaign Management", () => {
       const mockResponse = { data: "id,sent,delivered" };
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
-      const result = await client.getCampaignMetrics({ campaignId: 12345 });
+      const result = await client.getCampaignMetrics({
+        campaignId: 12345,
+        startDateTime: "2023-01-01",
+        endDateTime: "2023-12-31",
+      });
 
       expect(result).toEqual([]);
     });
@@ -296,7 +308,11 @@ describe("Campaign Management", () => {
       mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
       await expect(
-        client.getCampaignMetrics({ campaignId: 12345 })
+        client.getCampaignMetrics({
+          campaignId: 12345,
+          startDateTime: "2023-01-01",
+          endDateTime: "2023-12-31",
+        })
       ).rejects.toThrow("CSV parse error");
     });
   });
@@ -517,6 +533,23 @@ describe("Campaign Management", () => {
       // Missing required campaignId
       expect(() =>
         GetCampaignMetricsParamsSchema.parse({
+          startDateTime: new Date("2023-01-01T00:00:00Z"),
+          endDateTime: new Date("2023-12-31T23:59:59Z"),
+        })
+      ).toThrow();
+
+      // Missing required startDateTime
+      expect(() =>
+        GetCampaignMetricsParamsSchema.parse({
+          campaignId: 12345,
+          endDateTime: new Date("2023-12-31T23:59:59Z"),
+        })
+      ).toThrow();
+
+      // Missing required endDateTime
+      expect(() =>
+        GetCampaignMetricsParamsSchema.parse({
+          campaignId: 12345,
           startDateTime: new Date("2023-01-01T00:00:00Z"),
         })
       ).toThrow();

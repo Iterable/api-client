@@ -293,6 +293,8 @@ describe("Campaign Management Integration Tests", () => {
             withTimeout(
               client.getCampaignMetrics({
                 campaignId: campaign.id,
+                startDateTime: new Date(campaign.createdAt).toISOString(),
+                endDateTime: new Date().toISOString(),
               })
             ),
           "Get campaign metrics"
