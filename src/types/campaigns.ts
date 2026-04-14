@@ -134,11 +134,11 @@ export type GetChildCampaignsParams = z.infer<
 
 export const GetCampaignMetricsParamsSchema = z.object({
   campaignId: z.number().describe("Campaign ID to get metrics for"),
-  startDateTime: IterableDateTimeSchema.optional().describe(
-    "Start date for metrics (YYYY-MM-DD HH:MM:SS format)"
+  startDateTime: IterableDateTimeSchema.describe(
+    "Start of the metrics date range (YYYY-MM-DD HH:MM:SS format). Always use the narrowest window possible for performance."
   ),
-  endDateTime: IterableDateTimeSchema.optional().describe(
-    "End date for metrics (YYYY-MM-DD HH:MM:SS format)"
+  endDateTime: IterableDateTimeSchema.describe(
+    "End of the metrics date range (YYYY-MM-DD HH:MM:SS format). Always use the narrowest window possible for performance."
   ),
 });
 

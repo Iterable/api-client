@@ -134,10 +134,8 @@ export function Campaigns<T extends Constructor<BaseIterableClient>>(Base: T) {
     ): Promise<CampaignMetricsResponse> {
       const params = new URLSearchParams();
       params.append("campaignId", options.campaignId.toString());
-      if (options.startDateTime)
-        params.append("startDateTime", options.startDateTime);
-      if (options.endDateTime)
-        params.append("endDateTime", options.endDateTime);
+      params.append("startDateTime", options.startDateTime);
+      params.append("endDateTime", options.endDateTime);
 
       const response = await this.client.get(
         `/api/campaigns/metrics?${params.toString()}`,
