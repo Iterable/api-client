@@ -42,92 +42,90 @@ const BaseTemplateSchema = z.object({
   updatedAt: UnixTimestampSchema.optional().describe("Date last updated"),
 });
 
-export const EmailTemplateSchema = BaseTemplateSchema.extend({
-  bccEmails: z.array(z.string()).optional().describe("BCC emails"),
-  cacheDataFeed: z
-    .boolean()
-    .optional()
-    .describe("Cache data feed lookups for 1 hour"),
-  campaignDataFields: z
-    .record(z.string(), z.any())
-    .optional()
-    .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
-    ),
-  ccEmails: z.array(z.string()).optional().describe("CC emails"),
-  dataFeedId: z
-    .number()
-    .optional()
-    .describe(
-      "[Deprecated - use dataFeedIds instead] Id for data feed used in template rendering"
-    ),
-  dataFeedIds: z
-    .array(z.number())
-    .optional()
-    .describe("Ids for data feeds used in template rendering"),
+const campaignDataFieldsSchema = z
+  .record(z.string(), z.any())
+  .optional()
+  .describe(
+    "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
+  );
+
+// Content fields for each template type, shared between response and param schemas
+const EmailContentFields = {
+  subject: z.string().optional().describe("Subject"),
+  preheaderText: z.string().optional().describe("Preheader text"),
+  fromName: z.string().optional().describe("From name"),
   fromEmail: z
     .string()
     .optional()
     .describe("From email (must be an authorized sender)"),
-  fromName: z.string().optional().describe("From name"),
-  googleAnalyticsCampaignName: z
-    .string()
-    .optional()
-    .describe("Google analytics utm_campaign value"),
+  replyToEmail: z.string().optional().describe("Reply to email"),
+  ccEmails: z.array(z.string()).optional().describe("CC emails"),
+  bccEmails: z.array(z.string()).optional().describe("BCC emails"),
   html: z.string().optional().describe("HTML contents"),
-  linkParams: z
-    .array(z.any())
+  plainText: z.string().optional().describe("Plain text contents"),
+  cacheDataFeed: z
+    .boolean()
     .optional()
-    .describe("Parameters to append to each URL in html contents"),
+    .describe("Cache data feed lookups for 1 hour"),
+  dataFeedIds: z
+    .array(z.number())
+    .optional()
+    .describe("Ids for data feeds used in template rendering"),
+  dataFeedId: z
+    .number()
+    .optional()
+    .describe(
+      "[Deprecated - use dataFeedIds instead] ID for data feed used in template rendering"
+    ),
   mergeDataFeedContext: z
     .boolean()
     .optional()
     .describe(
-      "Merge data feed contents into user context, so fields be referenced by {{field}} instead of [[field]]"
-    ),
-  metadata: z.any().optional().describe("Metadata"),
-  plainText: z.string().optional().describe("Plain text contents"),
-  preheaderText: z.string().optional().describe("Preheader text"),
-  replyToEmail: z.string().optional().describe("Reply to email"),
-  subject: z.string().optional().describe("Subject"),
-});
-
-export const SMSTemplateSchema = BaseTemplateSchema.extend({
-  campaignDataFields: z
-    .record(z.string(), z.any())
-    .optional()
-    .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
+      "Merge data feed contents into user context, so fields can be referenced by {{field}} instead of [[field]]"
     ),
   googleAnalyticsCampaignName: z
     .string()
     .optional()
     .describe("Google analytics utm_campaign value"),
-  imageUrl: z.string().optional().describe("Image Url"),
+  linkParams: z
+    .array(z.any())
+    .optional()
+    .describe("Parameters to append to each URL in html contents"),
+  campaignDataFields: campaignDataFieldsSchema,
+};
+
+const SMSContentFields = {
+  message: z.string().optional().describe("SMS message"),
+  imageUrl: z.string().optional().describe("Image URL"),
+  googleAnalyticsCampaignName: z
+    .string()
+    .optional()
+    .describe("Google analytics utm_campaign value"),
   linkParams: z
     .array(z.any())
     .optional()
     .describe("Parameters to append to each URL in contents"),
-  message: z.string().optional().describe("SMS message"),
   trackingDomain: z.string().optional().describe("Tracking Domain"),
-});
+  campaignDataFields: campaignDataFieldsSchema,
+};
 
-export const PushTemplateSchema = BaseTemplateSchema.extend({
+const PushContentFields = {
+  message: z.string().optional().describe("Push message"),
+  title: z.string().optional().describe("Push message title"),
   badge: z.string().optional().describe("Badge to set for push notification"),
   buttons: z
     .array(z.any())
     .optional()
     .describe("Array of buttons that appear to respond to the push. Max of 3"),
+  sound: z.string().optional().describe("Sound"),
+  payload: z
+    .record(z.string(), z.any())
+    .optional()
+    .describe("Payload to send with push notification"),
   cacheDataFeed: z
     .boolean()
     .optional()
     .describe("Cache data feed lookups for 1 hour"),
-  campaignDataFields: z
-    .record(z.string(), z.any())
-    .optional()
-    .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
-    ),
   dataFeedIds: z
     .array(z.number())
     .optional()
@@ -139,7 +137,7 @@ export const PushTemplateSchema = BaseTemplateSchema.extend({
       "Deep Link. A mapping that accepts two optional properties: 'ios' & 'android' and their respective deep link values"
     ),
   interruptionLevel: z
-    .string()
+    .enum(["passive", "active", "time-sensitive", "critical"])
     .optional()
     .describe(
       "An interruption level helps iOS determine when to alert a user about the arrival of a push notification"
@@ -154,11 +152,6 @@ export const PushTemplateSchema = BaseTemplateSchema.extend({
     .describe(
       "Merge data feed contents into user context, so fields can be referenced by {{field}} instead of [[field]]"
     ),
-  message: z.string().optional().describe("Push message"),
-  payload: z
-    .record(z.string(), z.any())
-    .optional()
-    .describe("Payload to send with push notification"),
   relevanceScore: z
     .number()
     .optional()
@@ -171,23 +164,17 @@ export const PushTemplateSchema = BaseTemplateSchema.extend({
     .describe(
       "Rich Media URL. A mapping that accepts two optional properties: 'ios' & 'android' and their respective rich media url values"
     ),
-  sound: z.string().optional().describe("Sound"),
-  title: z.string().optional().describe("Push message title"),
   wake: z
     .boolean()
     .optional()
     .describe(
       "Set the content-available flag on iOS notifications, which will wake the app in the background"
     ),
-});
+  campaignDataFields: campaignDataFieldsSchema,
+};
 
-export const InAppTemplateSchema = BaseTemplateSchema.extend({
-  campaignDataFields: z
-    .record(z.string(), z.any())
-    .optional()
-    .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
-    ),
+const InAppContentFields = {
+  html: z.string().optional().describe("Html of the in-app notification"),
   expirationDateTime: z
     .string()
     .optional()
@@ -200,7 +187,6 @@ export const InAppTemplateSchema = BaseTemplateSchema.extend({
     .describe(
       "The in-app message's expiration time, relative to its send time. Should be an expression such as now+90d"
     ),
-  html: z.string().optional().describe("Html of the in-app notification"),
   inAppDisplaySettings: z
     .record(z.string(), z.any())
     .optional()
@@ -214,7 +200,20 @@ export const InAppTemplateSchema = BaseTemplateSchema.extend({
     .record(z.string(), z.any())
     .optional()
     .describe("Web In-app Display settings"),
+  campaignDataFields: campaignDataFieldsSchema,
+};
+
+export const EmailTemplateSchema = BaseTemplateSchema.extend({
+  ...EmailContentFields,
+  metadata: z.any().optional().describe("Metadata"),
 });
+
+export const SMSTemplateSchema = BaseTemplateSchema.extend(SMSContentFields);
+
+export const PushTemplateSchema = BaseTemplateSchema.extend(PushContentFields);
+
+export const InAppTemplateSchema =
+  BaseTemplateSchema.extend(InAppContentFields);
 
 export type EmailTemplate = z.infer<typeof EmailTemplateSchema>;
 export type SMSTemplate = z.infer<typeof SMSTemplateSchema>;
@@ -348,6 +347,12 @@ export type GetTemplateByClientIdResponse = z.infer<
 const BaseTemplateParamsSchema = z.object({
   name: z.string().optional().describe("Template name"),
   locale: z.string().optional().describe("Template locale"),
+  isDefaultLocale: z
+    .boolean()
+    .optional()
+    .describe(
+      "Sets the locale associated with the request content as the template's default"
+    ),
   messageTypeId: z.number().optional().describe("Message type ID"),
   creatorUserId: z.string().optional().describe("Creator user ID"),
   campaignId: z.number().optional().describe("Associated campaign ID"),
@@ -362,58 +367,6 @@ const UpsertTemplateParamsSchema = BaseTemplateParamsSchema.extend({
 const UpdateTemplateParamsSchema = BaseTemplateParamsSchema.extend({
   templateId: z.number().describe("Template ID to update"),
 });
-
-// Content field objects for each template type
-const EmailContentFields = {
-  subject: z.string().optional().describe("Email subject"),
-  fromName: z.string().optional().describe("From name"),
-  fromEmail: z.email().optional().describe("From email"),
-  html: z.string().optional().describe("HTML content"),
-  plainText: z.string().optional().describe("Plain text content"),
-  campaignDataFields: z
-    .record(z.string(), z.any())
-    .optional()
-    .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
-    ),
-};
-
-const SMSContentFields = {
-  message: z.string().optional().describe("SMS message content"),
-  campaignDataFields: z
-    .record(z.string(), z.any())
-    .optional()
-    .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
-    ),
-};
-
-const PushContentFields = {
-  message: z.string().optional().describe("Push notification message"),
-  title: z.string().optional().describe("Push notification title"),
-  badge: z.number().optional().describe("Badge count"),
-  sound: z.string().optional().describe("Sound file"),
-  payload: z.record(z.string(), z.any()).optional().describe("Custom payload"),
-  campaignDataFields: z
-    .record(z.string(), z.any())
-    .optional()
-    .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
-    ),
-};
-
-const InAppContentFields = {
-  html: z
-    .string()
-    .optional()
-    .describe("HTML content of the in-app notification"),
-  campaignDataFields: z
-    .record(z.string(), z.any())
-    .optional()
-    .describe(
-      "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
-    ),
-};
 
 // Email template upsert (create or update by clientTemplateId)
 export const UpsertEmailTemplateParamsSchema =

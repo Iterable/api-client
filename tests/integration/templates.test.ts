@@ -33,6 +33,7 @@ describe("Template Management Integration Tests", () => {
       name: uniqueId("Test-Email-Template"),
       clientTemplateId: uniqueId("test-email-template"),
       subject: "Integration Test Email",
+      preheaderText: "Integration test preheader",
       fromName: "Alex Newman",
       fromEmail: "alex.newman@iterable.com",
       html: "<html><body><h1>Test Email</h1><p>Hello {{firstName}}!</p><p><a href='{{unsubscribeUrl}}'>Unsubscribe</a></p></body></html>",
@@ -200,7 +201,14 @@ describe("Template Management Integration Tests", () => {
         templateId,
         name: `${originalData.name} (Updated)`,
         subject: `${originalData.subject} (Updated)`,
+        preheaderText: "Updated preheader",
       }),
+      verifyGet: (template: any, originalData: any) => {
+        expect(template.preheaderText).toBe(originalData.preheaderText);
+      },
+      verifyUpdate: (template: any) => {
+        expect(template.preheaderText).toBe("Updated preheader");
+      },
       proofData: (templateId: number, recipientEmail: string) => ({
         templateId,
         recipientEmail,
@@ -260,7 +268,15 @@ describe("Template Management Integration Tests", () => {
         createData,
         updateData,
         proofData,
+        ...rest
       }) => {
+        const verifyGet = (rest as any).verifyGet as
+          | ((template: any, originalData: any) => void)
+          | undefined;
+        const verifyUpdate = (rest as any).verifyUpdate as
+          | ((template: any) => void)
+          | undefined;
+
         describe(`${type} Templates`, () => {
           it(`should create, get, update, and delete ${type.toLowerCase()} template`, async () => {
             const templateData = createData();
@@ -274,6 +290,7 @@ describe("Template Management Integration Tests", () => {
 
               const getResponse = await waitForTemplate(templateId, getMethod);
               expect(getResponse.templateId).toBe(templateId);
+              verifyGet?.(getResponse, templateData);
 
               const updateParams = updateData(templateId, templateData);
               await withTimeout((client as any)[updateMethod](updateParams));
@@ -283,6 +300,7 @@ describe("Template Management Integration Tests", () => {
                 getMethod
               );
               expect(updatedTemplate.name).toBe(updateParams.name);
+              verifyUpdate?.(updatedTemplate);
 
               const deleteResponse = await withTimeout(
                 client.deleteTemplates({ ids: [templateId] })
