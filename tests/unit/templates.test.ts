@@ -16,7 +16,13 @@ import {
   SendTemplateProofParamsSchema,
   SMSTemplateSchema,
   UpdateEmailTemplateParamsSchema,
+  UpdateInAppTemplateParamsSchema,
+  UpdatePushTemplateParamsSchema,
+  UpdateSMSTemplateParamsSchema,
   UpsertEmailTemplateParamsSchema,
+  UpsertInAppTemplateParamsSchema,
+  UpsertPushTemplateParamsSchema,
+  UpsertSMSTemplateParamsSchema,
 } from "../../src/types/templates.js";
 import { createMockClient, createMockTemplate } from "../utils/test-helpers";
 
@@ -184,19 +190,23 @@ describe("Template Management", () => {
           templateId: 12345,
           name: "Test Email Template",
           subject: "Test Subject",
+          preheaderText: "Preview text here",
           fromName: "Test Sender",
           fromEmail: "test@example.com",
+          replyToEmail: "reply@example.com",
           html: "<html><body>Test</body></html>",
           plainText: "Test",
           createdAt: 1640995200000,
           updatedAt: 1640995200000,
           cacheDataFeed: true,
           mergeDataFeedContext: false,
+          dataFeedId: 42,
+          dataFeedIds: [42, 43],
         };
 
-        expect(() =>
-          EmailTemplateSchema.parse(validEmailTemplate)
-        ).not.toThrow();
+        const result = EmailTemplateSchema.parse(validEmailTemplate);
+        expect(result.preheaderText).toBe("Preview text here");
+        expect(result.dataFeedId).toBe(42);
 
         // Test required fields
         expect(() =>
@@ -427,6 +437,171 @@ describe("Template Management", () => {
           "Hello {{firstName}}! This is a test SMS."
         );
       }
+    });
+  });
+
+  describe("Upsert/Update Param Schema Validation", () => {
+    describe("Email param schemas accept all content fields", () => {
+      const fullEmailParams = {
+        name: "Test Email",
+        subject: "Subject",
+        preheaderText: "Preview text",
+        fromName: "Sender",
+        fromEmail: "sender@example.com",
+        replyToEmail: "reply@example.com",
+        ccEmails: ["cc@example.com"],
+        bccEmails: ["bcc@example.com"],
+        html: "<html><body>Test</body></html>",
+        plainText: "Test",
+        cacheDataFeed: true,
+        dataFeedIds: [1, 2],
+        dataFeedId: 1,
+        mergeDataFeedContext: false,
+        googleAnalyticsCampaignName: "campaign-1",
+        linkParams: [{ key: "utm_source", value: "iterable" }],
+        campaignDataFields: { field1: "value1" },
+        isDefaultLocale: true,
+      };
+
+      it("should accept all email fields on upsert", () => {
+        const result = UpsertEmailTemplateParamsSchema.safeParse({
+          ...fullEmailParams,
+          clientTemplateId: "test-email",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should accept all email fields on update", () => {
+        const result = UpdateEmailTemplateParamsSchema.safeParse({
+          ...fullEmailParams,
+          templateId: 12345,
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should include preheaderText in parsed output", () => {
+        const result = UpsertEmailTemplateParamsSchema.safeParse({
+          clientTemplateId: "test",
+          preheaderText: "Check out our latest deals!",
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data.preheaderText).toBe(
+            "Check out our latest deals!"
+          );
+        }
+      });
+    });
+
+    describe("SMS param schemas accept all content fields", () => {
+      const fullSMSParams = {
+        name: "Test SMS",
+        message: "Hello!",
+        imageUrl: "https://example.com/image.png",
+        googleAnalyticsCampaignName: "sms-campaign",
+        linkParams: [{ key: "utm_source", value: "iterable" }],
+        trackingDomain: "track.example.com",
+        campaignDataFields: { field1: "value1" },
+        isDefaultLocale: false,
+      };
+
+      it("should accept all SMS fields on upsert", () => {
+        const result = UpsertSMSTemplateParamsSchema.safeParse({
+          ...fullSMSParams,
+          clientTemplateId: "test-sms",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should accept all SMS fields on update", () => {
+        const result = UpdateSMSTemplateParamsSchema.safeParse({
+          ...fullSMSParams,
+          templateId: 12345,
+        });
+        expect(result.success).toBe(true);
+      });
+    });
+
+    describe("Push param schemas accept all content fields", () => {
+      const fullPushParams = {
+        name: "Test Push",
+        message: "Hello!",
+        title: "Title",
+        badge: "1",
+        buttons: [{ identifier: "btn1", action: "openApp" }],
+        sound: "default",
+        payload: { key: "value" },
+        cacheDataFeed: false,
+        dataFeedIds: [1],
+        deeplink: { ios: "myapp://home", android: "myapp://home" },
+        interruptionLevel: "time-sensitive" as const,
+        isSilentPush: false,
+        mergeDataFeedContext: true,
+        relevanceScore: 0.75,
+        richMedia: { ios: "https://example.com/img.png" },
+        wake: true,
+        campaignDataFields: { field1: "value1" },
+        isDefaultLocale: true,
+      };
+
+      it("should accept all push fields on upsert", () => {
+        const result = UpsertPushTemplateParamsSchema.safeParse({
+          ...fullPushParams,
+          clientTemplateId: "test-push",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should accept all push fields on update", () => {
+        const result = UpdatePushTemplateParamsSchema.safeParse({
+          ...fullPushParams,
+          templateId: 12345,
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should reject invalid interruptionLevel values", () => {
+        const result = UpsertPushTemplateParamsSchema.safeParse({
+          clientTemplateId: "test",
+          interruptionLevel: "invalid-value",
+        });
+        expect(result.success).toBe(false);
+      });
+    });
+
+    describe("InApp param schemas accept all content fields", () => {
+      const fullInAppParams = {
+        name: "Test InApp",
+        html: "<div>Hello!</div>",
+        expirationDateTime: "2026-12-31 23:59:59",
+        expirationDuration: "now+90d",
+        inAppDisplaySettings: { position: "center" },
+        inboxMetadata: {
+          title: "Inbox Title",
+          subtitle: "Subtitle",
+          icon: "https://example.com/icon.png",
+        },
+        payload: { key: "value" },
+        webInAppDisplaySettings: { position: "top-right" },
+        campaignDataFields: { field1: "value1" },
+        isDefaultLocale: false,
+      };
+
+      it("should accept all in-app fields on upsert", () => {
+        const result = UpsertInAppTemplateParamsSchema.safeParse({
+          ...fullInAppParams,
+          clientTemplateId: "test-inapp",
+        });
+        expect(result.success).toBe(true);
+      });
+
+      it("should accept all in-app fields on update", () => {
+        const result = UpdateInAppTemplateParamsSchema.safeParse({
+          ...fullInAppParams,
+          templateId: 12345,
+        });
+        expect(result.success).toBe(true);
+      });
     });
   });
 
