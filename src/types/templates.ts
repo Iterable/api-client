@@ -49,6 +49,13 @@ const campaignDataFieldsSchema = z
     "Campaign-level data fields available as {{field}} merge parameters during message rendering. These fields are overridden by user and event data fields of the same name."
   );
 
+const LinkParamSchema = z.object({
+  key: z.string().describe("Link parameter key"),
+  value: z.string().describe("Link parameter value"),
+});
+
+const PushActionButtonSchema = z.record(z.string(), z.any());
+
 // Content fields for each template type, shared between response and param schemas
 const EmailContentFields = {
   subject: z.string().optional().describe("Subject"),
@@ -88,7 +95,7 @@ const EmailContentFields = {
     .optional()
     .describe("Google analytics utm_campaign value"),
   linkParams: z
-    .array(z.any())
+    .array(LinkParamSchema)
     .optional()
     .describe("Parameters to append to each URL in html contents"),
   campaignDataFields: campaignDataFieldsSchema,
@@ -102,7 +109,7 @@ const SMSContentFields = {
     .optional()
     .describe("Google analytics utm_campaign value"),
   linkParams: z
-    .array(z.any())
+    .array(LinkParamSchema)
     .optional()
     .describe("Parameters to append to each URL in contents"),
   trackingDomain: z.string().optional().describe("Tracking Domain"),
@@ -114,7 +121,7 @@ const PushContentFields = {
   title: z.string().optional().describe("Push message title"),
   badge: z.string().optional().describe("Badge to set for push notification"),
   buttons: z
-    .array(z.any())
+    .array(PushActionButtonSchema)
     .optional()
     .describe("Array of buttons that appear to respond to the push. Max of 3"),
   sound: z.string().optional().describe("Sound"),
