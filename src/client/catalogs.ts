@@ -1,3 +1,6 @@
+import type { AxiosInstance } from "axios";
+
+import type { CatalogDocuments } from "../types/catalogs.js";
 import {
   BulkDeleteCatalogItemsParams,
   CatalogFieldMappingsResponse,
@@ -16,9 +19,10 @@ import {
   GetCatalogsResponse,
   GetCatalogsResponseSchema,
   PartialUpdateCatalogItemParams,
+  PartialUpdateCatalogItemsParams,
   ReplaceCatalogItemParams,
+  ReplaceCatalogItemsParams,
   UpdateCatalogFieldMappingsParams,
-  UpdateCatalogItemParams,
 } from "../types/catalogs.js";
 import {
   IterableSuccessResponse,
@@ -27,6 +31,19 @@ import {
 import type { Constructor } from "./base.js";
 import type { BaseIterableClient } from "./base.js";
 import { validateResponse } from "./base.js";
+
+async function bulkUploadCatalogItems(
+  client: AxiosInstance,
+  catalogName: string,
+  documents: CatalogDocuments,
+  replaceUploadedFieldsOnly: boolean
+): Promise<IterableSuccessResponse> {
+  const response = await client.post(
+    `/api/catalogs/${encodeURIComponent(catalogName)}/items`,
+    { documents, replaceUploadedFieldsOnly }
+  );
+  return validateResponse(response, IterableSuccessResponseSchema);
+}
 
 /**
  * Catalogs operations mixin
@@ -42,31 +59,32 @@ export function Catalogs<T extends Constructor<BaseIterableClient>>(Base: T) {
       return validateResponse(response, IterableSuccessResponseSchema);
     }
 
-    async updateCatalogItems(
-      options: UpdateCatalogItemParams
+    /**
+     * Bulk partial update catalog items
+     */
+    async partialUpdateCatalogItems(
+      params: PartialUpdateCatalogItemsParams
     ): Promise<IterableSuccessResponse> {
-      // Convert items array to documents object (map of id to values)
-      const documents: Record<string, any> = {};
-      options.items.forEach((item) => {
-        documents[item.id] = {
-          name: item.name,
-          description: item.description,
-          price: item.price,
-          categories: item.categories,
-          imageUrl: item.imageUrl,
-          url: item.url,
-          ...item.dataFields,
-        };
-      });
-
-      const response = await this.client.post(
-        `/api/catalogs/${encodeURIComponent(options.catalogName)}/items`,
-        {
-          documents,
-          replaceUploadedFieldsOnly: false,
-        }
+      return bulkUploadCatalogItems(
+        this.client,
+        params.catalogName,
+        params.documents,
+        true
       );
-      return validateResponse(response, IterableSuccessResponseSchema);
+    }
+
+    /**
+     * Bulk replace catalog items
+     */
+    async replaceCatalogItems(
+      params: ReplaceCatalogItemsParams
+    ): Promise<IterableSuccessResponse> {
+      return bulkUploadCatalogItems(
+        this.client,
+        params.catalogName,
+        params.documents,
+        false
+      );
     }
 
     async getCatalogItem(

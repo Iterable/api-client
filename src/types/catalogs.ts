@@ -2,44 +2,83 @@ import { z } from "zod";
 
 import { UnixTimestampSchema } from "./common.js";
 
-/**
- * Catalog management schemas and types
- */
+const CATALOG_ITEM_ID_REGEX = /^[a-zA-Z0-9-]{1,255}$/;
+const MAX_CATALOG_BULK_DOCUMENTS = 1000;
 
-export const CatalogItemSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  price: z.number().optional(),
-  categories: z.array(z.string()).optional(),
-  imageUrl: z.string().optional(),
-  url: z.string().optional(),
-  dataFields: z.record(z.string(), z.any()).optional(),
-});
+export const CatalogItemIdSchema = z
+  .string()
+  .regex(
+    CATALOG_ITEM_ID_REGEX,
+    "Invalid catalog item ID (alphanumeric and dashes only, max 255 chars)"
+  );
 
-export type CatalogItem = z.infer<typeof CatalogItemSchema>;
-export type UpdateCatalogItemParams = z.infer<
-  typeof UpdateCatalogItemParamsSchema
->;
-export type GetCatalogItemParams = z.infer<typeof GetCatalogItemParamsSchema>;
-export type DeleteCatalogItemParams = z.infer<
-  typeof DeleteCatalogItemParamsSchema
->;
+function validateCatalogItemFieldNames(
+  fields: Record<string, unknown>,
+  ctx: z.RefinementCtx
+): void {
+  for (const fieldName of Object.keys(fields)) {
+    if (fieldName.includes(".")) {
+      ctx.addIssue({
+        code: "custom",
+        message: `Field name "${fieldName}" must not contain periods`,
+      });
+    }
+  }
+}
 
-export const UpdateCatalogItemParamsSchema = z.object({
-  catalogName: z.string().describe("Name of the catalog"),
-  items: z.array(CatalogItemSchema).describe("Catalog items to update"),
-});
+export const CatalogDocumentFieldsSchema = z
+  .record(z.string(), z.unknown())
+  .superRefine(validateCatalogItemFieldNames)
+  .describe("Catalog item field values");
+
+export type CatalogDocumentFields = z.infer<typeof CatalogDocumentFieldsSchema>;
+
+function validateCatalogDocuments(
+  documents: Record<string, CatalogDocumentFields>,
+  ctx: z.RefinementCtx
+): void {
+  const itemIds = Object.keys(documents);
+
+  if (itemIds.length === 0) {
+    ctx.addIssue({
+      code: "custom",
+      message: "documents must contain at least one catalog item",
+    });
+    return;
+  }
+
+  if (itemIds.length > MAX_CATALOG_BULK_DOCUMENTS) {
+    ctx.addIssue({
+      code: "custom",
+      message: `documents may contain at most ${MAX_CATALOG_BULK_DOCUMENTS} items`,
+    });
+  }
+
+  for (const itemId of itemIds) {
+    if (!CATALOG_ITEM_ID_REGEX.test(itemId)) {
+      ctx.addIssue({
+        code: "custom",
+        message: `Invalid catalog item ID "${itemId}" (alphanumeric and dashes only, max 255 chars)`,
+      });
+    }
+  }
+}
 
 export const GetCatalogItemParamsSchema = z.object({
   catalogName: z.string().describe("Name of the catalog"),
-  itemId: z.string().describe("ID of the catalog item to retrieve"),
+  itemId: CatalogItemIdSchema.describe("ID of the catalog item to retrieve"),
 });
+
+export type GetCatalogItemParams = z.infer<typeof GetCatalogItemParamsSchema>;
 
 export const DeleteCatalogItemParamsSchema = z.object({
   catalogName: z.string().describe("Name of the catalog"),
-  itemId: z.string().describe("ID of the catalog item to delete"),
+  itemId: CatalogItemIdSchema.describe("ID of the catalog item to delete"),
 });
+
+export type DeleteCatalogItemParams = z.infer<
+  typeof DeleteCatalogItemParamsSchema
+>;
 
 export const CatalogNameSchema = z.object({
   name: z.string(),
@@ -193,10 +232,39 @@ export type UpdateCatalogFieldMappingsParams = z.infer<
   typeof UpdateCatalogFieldMappingsParamsSchema
 >;
 
+export const CatalogDocumentsSchema = z
+  .record(z.string(), CatalogDocumentFieldsSchema)
+  .superRefine(validateCatalogDocuments)
+  .describe("Map of catalog item ID to field values");
+
+export type CatalogDocuments = z.infer<typeof CatalogDocumentsSchema>;
+
+const BulkCatalogItemsParamsSchema = z.object({
+  catalogName: z.string().describe("Name of the catalog"),
+  documents: CatalogDocumentsSchema,
+});
+
+// Bulk partial update catalog items
+export const PartialUpdateCatalogItemsParamsSchema =
+  BulkCatalogItemsParamsSchema;
+
+export type PartialUpdateCatalogItemsParams = z.infer<
+  typeof PartialUpdateCatalogItemsParamsSchema
+>;
+
+// Bulk replace catalog items
+export const ReplaceCatalogItemsParamsSchema = BulkCatalogItemsParamsSchema;
+
+export type ReplaceCatalogItemsParams = z.infer<
+  typeof ReplaceCatalogItemsParamsSchema
+>;
+
 // Bulk delete catalog items
 export const BulkDeleteCatalogItemsParamsSchema = z.object({
   catalogName: z.string().describe("Name of the catalog"),
-  itemIds: z.array(z.string()).describe("Array of item IDs to delete"),
+  itemIds: z
+    .array(CatalogItemIdSchema)
+    .describe("Array of item IDs to delete"),
 });
 
 export type BulkDeleteCatalogItemsParams = z.infer<
@@ -206,8 +274,8 @@ export type BulkDeleteCatalogItemsParams = z.infer<
 // Partial update catalog item (PATCH)
 export const PartialUpdateCatalogItemParamsSchema = z.object({
   catalogName: z.string().describe("Name of the catalog"),
-  itemId: z.string().describe("ID of the catalog item"),
-  update: z.record(z.string(), z.any()).describe("Fields to update"),
+  itemId: CatalogItemIdSchema.describe("ID of the catalog item"),
+  update: CatalogDocumentFieldsSchema.describe("Fields to update"),
 });
 
 export type PartialUpdateCatalogItemParams = z.infer<
@@ -217,8 +285,8 @@ export type PartialUpdateCatalogItemParams = z.infer<
 // Replace catalog item (PUT)
 export const ReplaceCatalogItemParamsSchema = z.object({
   catalogName: z.string().describe("Name of the catalog"),
-  itemId: z.string().describe("ID of the catalog item"),
-  value: z.record(z.string(), z.any()).describe("New value for the item"),
+  itemId: CatalogItemIdSchema.describe("ID of the catalog item"),
+  value: CatalogDocumentFieldsSchema.describe("New value for the item"),
 });
 
 export type ReplaceCatalogItemParams = z.infer<

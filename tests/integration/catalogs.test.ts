@@ -6,6 +6,7 @@ import {
   createTestIdentifiers,
   uniqueId,
   waitForCatalogItems,
+  waitForCatalogItemValue,
   withTimeout,
 } from "../utils/test-helpers";
 
@@ -46,19 +47,16 @@ describe("Catalog Management Integration Tests", () => {
 
     // Add some items to the catalog with various field types
     await withTimeout(
-      client.updateCatalogItems({
+      client.partialUpdateCatalogItems({
         catalogName,
-        items: [
-          {
-            id: uniqueId("test-item"),
+        documents: {
+          [uniqueId("test-item")]: {
             name: "Test Item",
             price: 10.99,
-            dataFields: {
-              category: "test",
-              inStock: true,
-            },
+            category: "test",
+            inStock: true,
           },
-        ],
+        },
       })
     );
 
@@ -83,26 +81,20 @@ describe("Catalog Management Integration Tests", () => {
     const itemId2 = uniqueId("catalog-items-test-2");
 
     await withTimeout(
-      client.updateCatalogItems({
+      client.partialUpdateCatalogItems({
         catalogName,
-        items: [
-          {
-            id: itemId1,
+        documents: {
+          [itemId1]: {
             name: "Catalog Items Test Item 1",
             price: 5.99,
-            dataFields: {
-              category: "test",
-            },
+            category: "test",
           },
-          {
-            id: itemId2,
+          [itemId2]: {
             name: "Catalog Items Test Item 2",
             price: 7.99,
-            dataFields: {
-              category: "test",
-            },
+            category: "test",
           },
-        ],
+        },
       })
     );
 
@@ -134,20 +126,18 @@ describe("Catalog Management Integration Tests", () => {
     const itemId2 = uniqueId("pagination-test-2");
 
     await withTimeout(
-      client.updateCatalogItems({
+      client.partialUpdateCatalogItems({
         catalogName,
-        items: [
-          {
-            id: itemId1,
+        documents: {
+          [itemId1]: {
             name: "Pagination Test Item 1",
             price: 5.99,
           },
-          {
-            id: itemId2,
+          [itemId2]: {
             name: "Pagination Test Item 2",
             price: 7.99,
           },
-        ],
+        },
       })
     );
 
@@ -216,18 +206,15 @@ describe("Catalog Management Integration Tests", () => {
 
     // Add items with some fields first
     await withTimeout(
-      client.updateCatalogItems({
+      client.partialUpdateCatalogItems({
         catalogName,
-        items: [
-          {
-            id: uniqueId("test-item"),
+        documents: {
+          [uniqueId("test-item")]: {
             name: "Test Item",
-            dataFields: {
-              price: 19.99,
-              quantity: 10,
-            },
+            price: 19.99,
+            quantity: 10,
           },
-        ],
+        },
       })
     );
 
@@ -266,13 +253,13 @@ describe("Catalog Management Integration Tests", () => {
 
     // Create items
     await withTimeout(
-      client.updateCatalogItems({
+      client.partialUpdateCatalogItems({
         catalogName,
-        items: [
-          { id: itemId1, name: "Item 1", price: 10 },
-          { id: itemId2, name: "Item 2", price: 20 },
-          { id: itemId3, name: "Item 3", price: 30 },
-        ],
+        documents: {
+          [itemId1]: { name: "Item 1", price: 10 },
+          [itemId2]: { name: "Item 2", price: 20 },
+          [itemId3]: { name: "Item 3", price: 30 },
+        },
       })
     );
 
@@ -302,20 +289,17 @@ describe("Catalog Management Integration Tests", () => {
 
     // Create an item with multiple fields
     await withTimeout(
-      client.updateCatalogItems({
+      client.partialUpdateCatalogItems({
         catalogName,
-        items: [
-          {
-            id: itemId,
+        documents: {
+          [itemId]: {
             name: "Original Item",
             price: 100,
-            dataFields: {
-              description: "Original description",
-              category: "electronics",
-              inStock: true,
-            },
+            description: "Original description",
+            category: "electronics",
+            inStock: true,
           },
-        ],
+        },
       })
     );
 
@@ -351,20 +335,17 @@ describe("Catalog Management Integration Tests", () => {
 
     // Create an item with multiple fields
     await withTimeout(
-      client.updateCatalogItems({
+      client.partialUpdateCatalogItems({
         catalogName,
-        items: [
-          {
-            id: itemId,
+        documents: {
+          [itemId]: {
             name: "Original Item",
             price: 100,
-            dataFields: {
-              description: "Original description",
-              category: "electronics",
-              inStock: true,
-            },
+            description: "Original description",
+            category: "electronics",
+            inStock: true,
           },
-        ],
+        },
       })
     );
 
@@ -390,4 +371,91 @@ describe("Catalog Management Integration Tests", () => {
     // Note: We're testing the request format, not verifying the actual replacement
     // due to eventual consistency
   }, 120000);
+
+  it("merges fields with partialUpdateCatalogItems", async () => {
+    const catalogName = uniqueId("test-catalog-merge");
+    await withTimeout(client.createCatalog({ catalogName }));
+
+    const itemId = uniqueId("merge-item");
+
+    await withTimeout(
+      client.replaceCatalogItems({
+        catalogName,
+        documents: {
+          [itemId]: {
+            name: "Original Item",
+            price: 100,
+            keepField: true,
+          },
+        },
+      })
+    );
+
+    await waitForCatalogItems(client, catalogName, [itemId]);
+
+    await withTimeout(
+      client.partialUpdateCatalogItems({
+        catalogName,
+        documents: {
+          [itemId]: { price: 50 },
+        },
+      })
+    );
+
+    const item = await waitForCatalogItemValue(
+      client,
+      catalogName,
+      itemId,
+      (value) =>
+        value.name === "Original Item" &&
+        value.price === 50 &&
+        value.keepField === true
+    );
+
+    expect(item.value).toMatchObject({
+      name: "Original Item",
+      price: 50,
+      keepField: true,
+    });
+  }, 180000);
+
+  it("replaces items with replaceCatalogItems", async () => {
+    const catalogName = uniqueId("test-catalog-overwrite");
+    await withTimeout(client.createCatalog({ catalogName }));
+
+    const itemId = uniqueId("overwrite-item");
+
+    await withTimeout(
+      client.replaceCatalogItems({
+        catalogName,
+        documents: {
+          [itemId]: {
+            name: "Original Item",
+            price: 100,
+            keepField: true,
+          },
+        },
+      })
+    );
+
+    await waitForCatalogItems(client, catalogName, [itemId]);
+
+    await withTimeout(
+      client.replaceCatalogItems({
+        catalogName,
+        documents: {
+          [itemId]: { price: 50 },
+        },
+      })
+    );
+
+    const item = await waitForCatalogItemValue(
+      client,
+      catalogName,
+      itemId,
+      (value) => value.price === 50 && Object.keys(value).length === 1
+    );
+
+    expect(item.value).toEqual({ price: 50 });
+  }, 180000);
 });

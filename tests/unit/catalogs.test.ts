@@ -13,7 +13,12 @@ import {
   isIterableApiError,
   IterableApiError,
 } from "../../src/errors.js";
-import { UpdateCatalogItemParamsSchema } from "../../src/types/catalogs.js";
+import {
+  PartialUpdateCatalogItemParamsSchema,
+  PartialUpdateCatalogItemsParamsSchema,
+  ReplaceCatalogItemParamsSchema,
+  ReplaceCatalogItemsParamsSchema,
+} from "../../src/types/catalogs.js";
 import { createMockClient } from "../utils/test-helpers";
 
 describe("Catalog Operations", () => {
@@ -64,24 +69,80 @@ describe("Catalog Operations", () => {
     });
   });
 
-  describe("updateCatalogItems", () => {
-    it("should encode catalog name with special characters", async () => {
-      const mockResponse = {
-        data: {
-          msg: "Items updated",
-          code: "Success",
-        },
-      };
-      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+  describe("bulk catalog items", () => {
+    it("encodes catalog name with special characters", async () => {
+      mockAxiosInstance.post.mockResolvedValue({
+        data: { msg: "Items updated", code: "Success" },
+      });
 
-      await client.updateCatalogItems({
+      await client.partialUpdateCatalogItems({
         catalogName: "my catalog",
-        items: [{ id: "item1", name: "Test" }],
+        documents: {
+          item1: { name: "Test" },
+        },
       });
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         "/api/catalogs/my%20catalog/items",
-        expect.any(Object)
+        {
+          documents: {
+            item1: { name: "Test" },
+          },
+          replaceUploadedFieldsOnly: true,
+        }
+      );
+    });
+
+    it("passes through arbitrary document fields without transformation", async () => {
+      mockAxiosInstance.post.mockResolvedValue({
+        data: { msg: "Items updated", code: "Success" },
+      });
+
+      const documents = {
+        "restaurant-123": {
+          name: "Good Thai",
+          cuisine: "thai",
+          averagePrice: 25,
+          location: {
+            lat: 37.78,
+            lon: -122.42,
+          },
+        },
+      };
+
+      await client.partialUpdateCatalogItems({
+        catalogName: "restaurants",
+        documents,
+      });
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/catalogs/restaurants/items",
+        {
+          documents,
+          replaceUploadedFieldsOnly: true,
+        }
+      );
+    });
+
+    it.each([
+      ["partialUpdateCatalogItems", true],
+      ["replaceCatalogItems", false],
+    ] as const)("sets replaceUploadedFieldsOnly via %s", async (method, flag) => {
+      mockAxiosInstance.post.mockResolvedValue({
+        data: { msg: "Items updated", code: "Success" },
+      });
+
+      await client[method]({
+        catalogName: "products",
+        documents: { item1: { price: 10 } },
+      });
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/catalogs/products/items",
+        {
+          documents: { item1: { price: 10 } },
+          replaceUploadedFieldsOnly: flag,
+        }
       );
     });
   });
@@ -395,28 +456,121 @@ describe("Catalog Operations", () => {
   });
 
   describe("Schema Validation", () => {
-    it("should validate catalog parameters", () => {
-      // Valid catalog update
+    it("validates bulk catalog item parameters", () => {
+      const validParams = {
+        catalogName: "products",
+        documents: {
+          item1: {
+            name: "Test Product",
+            price: 29.99,
+            description: "A test product",
+            categories: ["electronics"],
+          },
+        },
+      };
+
       expect(() =>
-        UpdateCatalogItemParamsSchema.parse({
+        PartialUpdateCatalogItemsParamsSchema.parse(validParams)
+      ).not.toThrow();
+      expect(() =>
+        ReplaceCatalogItemsParamsSchema.parse(validParams)
+      ).not.toThrow();
+
+      expect(() =>
+        PartialUpdateCatalogItemsParamsSchema.parse({
           catalogName: "products",
-          items: [
-            {
-              id: "item1",
+          documents: {
+            item1: "not-an-object",
+          },
+        })
+      ).toThrow();
+
+      expect(() =>
+        PartialUpdateCatalogItemsParamsSchema.parse({
+          catalogName: "products",
+        })
+      ).toThrow();
+
+      expect(() =>
+        PartialUpdateCatalogItemsParamsSchema.parse({
+          catalogName: "products",
+          documents: {},
+        })
+      ).toThrow();
+
+      expect(() =>
+        PartialUpdateCatalogItemsParamsSchema.parse({
+          catalogName: "products",
+          documents: {
+            "invalid.id": { price: 29.99 },
+          },
+        })
+      ).toThrow();
+
+      expect(() =>
+        PartialUpdateCatalogItemsParamsSchema.parse({
+          catalogName: "products",
+          documents: {
+            item1: { "bad.field": 29.99 },
+          },
+        })
+      ).toThrow();
+
+      expect(() =>
+        PartialUpdateCatalogItemsParamsSchema.parse({
+          catalogName: "products",
+          documents: {
+            item1: {
               name: "Test Product",
-              price: 29.99,
-              description: "A test product",
-              categories: ["electronics"],
+              categories: ["electronics", "sale"],
             },
-          ],
+          },
         })
       ).not.toThrow();
 
-      // Invalid - missing required item fields
       expect(() =>
-        UpdateCatalogItemParamsSchema.parse({
+        PartialUpdateCatalogItemsParamsSchema.parse({
           catalogName: "products",
-          items: [{ price: 29.99 }], // missing id and name
+          documents: {
+            item1: {
+              name: "Kelly's Cafe",
+              bestItem: { dish: "Tibs", price: 12 },
+              location: { lat: 37.77, lon: -122.43 },
+            },
+          },
+        })
+      ).not.toThrow();
+    });
+
+    it("validates single catalog item parameters", () => {
+      const validParams = {
+        catalogName: "products",
+        itemId: "item-123",
+        update: { price: 29.99 },
+      };
+
+      expect(() =>
+        PartialUpdateCatalogItemParamsSchema.parse(validParams)
+      ).not.toThrow();
+      expect(() =>
+        ReplaceCatalogItemParamsSchema.parse({
+          catalogName: "products",
+          itemId: "item-123",
+          value: { name: "Test", price: 29.99 },
+        })
+      ).not.toThrow();
+
+      expect(() =>
+        PartialUpdateCatalogItemParamsSchema.parse({
+          ...validParams,
+          itemId: "invalid id",
+        })
+      ).toThrow();
+
+      expect(() =>
+        PartialUpdateCatalogItemParamsSchema.parse({
+          ...validParams,
+          update: { "bad.field": 29.99 },
         })
       ).toThrow();
     });

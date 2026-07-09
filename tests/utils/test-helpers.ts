@@ -4,7 +4,10 @@ import { randomUUID } from "crypto";
 import { IterableClient } from "../../src/client";
 import { config } from "../../src/config.js";
 import { logger } from "../../src/logger.js";
-import type { GetCatalogItemsResponse } from "../../src/types/catalogs.js";
+import type {
+  CatalogItemWithProperties,
+  GetCatalogItemsResponse,
+} from "../../src/types/catalogs.js";
 import type { UserEvent, UserResponse } from "../../src/types/users.js";
 
 // Constants for unit tests
@@ -410,6 +413,35 @@ export async function waitForCatalogItems(
     {
       description: `Catalog items ${expectedItemIds.join(", ")} to appear in ${catalogName}`,
       timeoutMs: 60000,
+    }
+  );
+}
+
+export async function waitForCatalogItemValue(
+  client: IterableClient,
+  catalogName: string,
+  itemId: string,
+  predicate: (value: CatalogItemWithProperties["value"]) => boolean
+): Promise<CatalogItemWithProperties> {
+  return retryWithBackoff(
+    async () => {
+      const response = await client.getCatalogItems({ catalogName });
+      const item = response.catalogItemsWithProperties.find(
+        (catalogItem) => catalogItem.itemId === itemId
+      );
+      if (!item) {
+        throw new Error(`Catalog item ${itemId} not found yet`);
+      }
+      if (!predicate(item.value)) {
+        throw new Error(
+          `Catalog item ${itemId} value did not match expected state yet`
+        );
+      }
+      return item;
+    },
+    {
+      description: `Catalog item ${itemId} value to match expected state in ${catalogName}`,
+      timeoutMs: 90000,
     }
   );
 }
