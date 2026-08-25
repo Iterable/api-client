@@ -4,9 +4,14 @@ import {
   IterableSuccessResponseSchema,
 } from "../types/common.js";
 import {
+  GetJourneyDslGraphParams,
+  GetJourneyDslGraphResponse,
+  GetJourneyDslGraphResponseSchema,
   GetJourneysParams,
   GetJourneysResponse,
   GetJourneysResponseSchema,
+  JourneyDslTileTypeManifest,
+  JourneyDslTileTypeManifestSchema,
   TriggerJourneyParams,
 } from "../types/journeys.js";
 import type { BaseIterableClient, Constructor } from "./base.js";
@@ -50,6 +55,21 @@ export function Journeys<T extends Constructor<BaseIterableClient>>(Base: T) {
       const url = `/api/journeys?${queryParams.toString()}`;
       const response = await this.client.get(url);
       return validateResponse(response, GetJourneysResponseSchema);
+    }
+
+    async getJourneyDslSchema(): Promise<JourneyDslTileTypeManifest> {
+      const response = await this.client.get("/api/journeys/dsl/schema");
+      return validateResponse(response, JourneyDslTileTypeManifestSchema);
+    }
+
+    async getJourneyDslGraph(
+      params: GetJourneyDslGraphParams
+    ): Promise<GetJourneyDslGraphResponse> {
+      const response = await this.client.post(
+        "/api/journeys/dsl/graph",
+        params
+      );
+      return validateResponse(response, GetJourneyDslGraphResponseSchema);
     }
   };
 }
