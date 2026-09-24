@@ -353,22 +353,53 @@ describe("Experiment Operations", () => {
 
   describe("getExperiment", () => {
     it("should get experiment details by ID", async () => {
-      const mockResponse = {
+      mockAxiosInstance.get.mockResolvedValue({
         data: {
           id: 123,
-          name: "Test Experiment",
           status: "running",
-          campaignId: 456,
           channelType: "email",
-          author: "test@example.com",
+          experimentType: "SubjectLine",
+          allocationMode: "even_split",
+          sizing: {
+            holdoutPercentage: null,
+            perVariantPercentage: 50,
+            testGroupPercentage: null,
+            winnerGroupPercentage: null,
+            testDurationMinutes: null,
+            sendsPerVariant: null,
+            attributionPeriodHours: null,
+          },
+          creationDate: null,
+          startDate: null,
+          finishDate: null,
+          constraints: null,
+          meta: {
+            name: "Test Experiment",
+            conversionMetrics: ["opens"],
+            campaignId: 456,
+            projectId: 1,
+            orgId: 2,
+          },
           variants: [
-            { id: 1, name: "Control", percentage: 50 },
-            { id: 2, name: "Variant A", percentage: 50 },
+            {
+              id: 1,
+              name: "Control",
+              value: { templateId: 10 },
+              currentPercentage: 50,
+              isWinner: false,
+              isControl: true,
+            },
+            {
+              id: 2,
+              name: "Variant A",
+              value: { templateId: 11 },
+              currentPercentage: 50,
+              isWinner: false,
+              isControl: false,
+            },
           ],
         },
-      };
-
-      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+      });
 
       const result = await client.getExperiment({ experimentId: 123 });
 
@@ -377,7 +408,12 @@ describe("Experiment Operations", () => {
       );
       expect(result.id).toBe(123);
       expect(result.name).toBe("Test Experiment");
+      expect(result.campaignId).toBe(456);
+      expect(result.meta.name).toBe("Test Experiment");
+      expect(result.allocationMode).toBe("even_split");
       expect(result.variants).toHaveLength(2);
+      expect(result.variants[0]?.percentage).toBe(50);
+      expect(result.variants[0]?.currentPercentage).toBe(50);
     });
 
     it("should handle 404 error for non-existent experiment", async () => {
@@ -396,24 +432,31 @@ describe("Experiment Operations", () => {
     it("should get experiment variants", async () => {
       const mockResponse = {
         data: {
+          experimentId: 123,
           variants: [
             {
-              id: 1,
+              variantId: 0,
               name: "Control",
-              percentage: 50,
-              subject: "Control Subject",
-              preheader: "Control Preheader",
-              htmlSource: "<html>Control</html>",
-              plainText: "Control",
+              value: { templateId: 84 },
+              currentPercentage: 50,
+              content: {
+                subject: "Control Subject",
+                preheader: "Control Preheader",
+                htmlSource: "<html>Control</html>",
+                plainText: "Control",
+              },
             },
             {
-              id: 2,
+              variantId: 1,
               name: "Variant A",
-              percentage: 50,
-              subject: "Variant A Subject",
-              preheader: "Variant A Preheader",
-              htmlSource: "<html>Variant A</html>",
-              plainText: "Variant A",
+              value: { templateId: 85 },
+              currentPercentage: 50,
+              content: {
+                subject: "Variant A Subject",
+                preheader: "Variant A Preheader",
+                htmlSource: "<html>Variant A</html>",
+                plainText: "Variant A",
+              },
             },
           ],
         },
@@ -426,9 +469,14 @@ describe("Experiment Operations", () => {
       expect(mockAxiosInstance.get).toHaveBeenCalledWith(
         "/api/experiments/123/variants"
       );
+      expect(result.experimentId).toBe(123);
       expect(result.variants).toHaveLength(2);
-      expect(result.variants[0]?.subject).toBe("Control Subject");
-      expect(result.variants[1]?.subject).toBe("Variant A Subject");
+      expect(result.variants[0]?.variantId).toBe(0);
+      expect(result.variants[0]?.id).toBe(0);
+      expect(result.variants[0]?.currentPercentage).toBe(50);
+      expect(result.variants[0]?.percentage).toBe(50);
+      expect(result.variants[0]?.content?.subject).toBe("Control Subject");
+      expect(result.variants[1]?.content?.subject).toBe("Variant A Subject");
     });
 
     it("should handle 404 error for non-existent experiment variants", async () => {
@@ -445,11 +493,14 @@ describe("Experiment Operations", () => {
     it("should handle experiments with optional fields", async () => {
       const mockResponse = {
         data: {
+          experimentId: 123,
           variants: [
             {
-              id: 1,
+              variantId: 0,
               name: "Control",
-              percentage: 100,
+              value: { templateId: 84 },
+              currentPercentage: 100,
+              content: null,
             },
           ],
         },
@@ -460,8 +511,235 @@ describe("Experiment Operations", () => {
       const result = await client.getExperimentVariants({ experimentId: 123 });
 
       expect(result.variants).toHaveLength(1);
-      expect(result.variants[0]?.subject).toBeUndefined();
-      expect(result.variants[0]?.htmlSource).toBeUndefined();
+      expect(result.variants[0]?.id).toBe(0);
+      expect(result.variants[0]?.percentage).toBe(100);
+      expect(result.variants[0]?.content).toBeNull();
+    });
+  });
+
+  describe("experiment write and metrics routes", () => {
+    const experiment = {
+      id: 884102,
+      status: "draft",
+      channelType: "email",
+      experimentType: "SubjectLine",
+      allocationMode: "even_split",
+      sizing: {
+        holdoutPercentage: null,
+        perVariantPercentage: null,
+        testGroupPercentage: null,
+        winnerGroupPercentage: null,
+        testDurationMinutes: null,
+        sendsPerVariant: null,
+        attributionPeriodHours: null,
+      },
+      creationDate: null,
+      startDate: null,
+      finishDate: null,
+      constraints: null,
+      meta: {
+        name: "Welcome Experiment",
+        conversionMetrics: ["opens"],
+        campaignId: 129500,
+        projectId: 1,
+        orgId: 2,
+      },
+      variants: [
+        {
+          id: 0,
+          name: "Control",
+          value: { templateId: 55 },
+          currentPercentage: 50,
+          isWinner: false,
+          isControl: true,
+        },
+      ],
+    };
+
+    it("gets lifetime totals", async () => {
+      mockAxiosInstance.get.mockResolvedValue({
+        data: {
+          id: 884102,
+          status: "running",
+          lift: 0.2,
+          variants: [
+            {
+              id: 0,
+              name: "Control",
+              isControl: true,
+              isWinner: false,
+              confidence: 0.9,
+              metrics: { sends: 5000, emailOpen: 1250, purchase: 50 },
+            },
+          ],
+        },
+      });
+
+      const result = await client.getExperimentTotals({ experimentId: 884102 });
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+        "/api/experiments/884102/totals"
+      );
+      expect(result).toEqual({
+        id: 884102,
+        status: "running",
+        variants: [
+          {
+            id: 0,
+            name: "Control",
+            isControl: true,
+            isWinner: false,
+            metrics: { sends: 5000, emailOpen: 1250, purchase: 50 },
+          },
+        ],
+      });
+      expect(result).not.toHaveProperty("lift");
+      expect(result.variants[0]).not.toHaveProperty("confidence");
+    });
+
+    it("gets trends for an explicit date window", async () => {
+      mockAxiosInstance.get.mockResolvedValue({
+        data: {
+          id: 884102,
+          status: "running",
+          interval: "day",
+          startDateTime: "2024-01-01T00:00:00.000Z",
+          endDateTime: "2024-01-07T00:00:00.000Z",
+          variants: [
+            {
+              id: 0,
+              name: "Control",
+              isControl: true,
+              isWinner: false,
+              series: {
+                TotalEmailSend: [
+                  { time: "2024-01-01T00:00:00.000Z", value: 10 },
+                ],
+              },
+            },
+          ],
+          holdout: null,
+        },
+      });
+
+      await client.getExperimentTrends({
+        experimentId: 884102,
+        startDateTime: "2024-01-01T00:00:00.000Z",
+        endDateTime: "2024-01-07T00:00:00.000Z",
+      });
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+        "/api/experiments/884102/trends?startDateTime=2024-01-01T00%3A00%3A00.000Z&endDateTime=2024-01-07T00%3A00%3A00.000Z"
+      );
+    });
+
+    it("gets trends for the default run window", async () => {
+      mockAxiosInstance.get.mockResolvedValue({
+        data: {
+          id: 884102,
+          status: "running",
+          interval: "day",
+          startDateTime: "2024-01-01T00:00:00.000Z",
+          endDateTime: "2024-01-07T00:00:00.000Z",
+          variants: [],
+        },
+      });
+
+      await client.getExperimentTrends({ experimentId: 884102 });
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+        "/api/experiments/884102/trends"
+      );
+    });
+
+    it("accepts epoch millisecond timestamps on the experiment body", async () => {
+      mockAxiosInstance.post.mockResolvedValue({
+        data: {
+          ...experiment,
+          status: "finished",
+          creationDate: 1790263999585,
+          startDate: 1790264000000,
+          finishDate: 1790265000000,
+        },
+      });
+
+      const result = await client.cancelExperiment({ experimentId: 884102 });
+
+      expect(result.creationDate).toBe(1790263999585);
+      expect(result.startDate).toBe(1790264000000);
+      expect(result.finishDate).toBe(1790265000000);
+    });
+
+    it("creates a draft and omits an absent name", async () => {
+      mockAxiosInstance.post.mockResolvedValue({ data: experiment });
+
+      const result = await client.createExperiment({
+        campaignId: 129500,
+        experimentType: "SubjectLine",
+      });
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith("/api/experiments", {
+        campaignId: 129500,
+        experimentType: "SubjectLine",
+      });
+      expect(result.id).toBe(884102);
+      expect(result.sizing.holdoutPercentage).toBeNull();
+      expect(result.constraints).toBeNull();
+    });
+
+    it("copies a template into a new variant", async () => {
+      mockAxiosInstance.post.mockResolvedValue({ data: experiment });
+
+      await client.copyExperimentVariant({
+        experimentId: 884102,
+        copyFromTemplateId: 55,
+        name: "Variant A",
+      });
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/experiments/884102/variants",
+        { copyFromTemplateId: 55, name: "Variant A" }
+      );
+    });
+
+    it("patches settings and sends null without omitted fields", async () => {
+      mockAxiosInstance.patch.mockResolvedValue({ data: experiment });
+
+      await client.updateExperimentSettings({
+        experimentId: 884102,
+        holdoutSettings: null,
+      });
+
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
+        "/api/experiments/884102/settings",
+        { holdoutSettings: null }
+      );
+    });
+
+    it.each([
+      ["startExperiment", "/api/experiments/884102/start"],
+      ["cancelExperiment", "/api/experiments/884102/cancel"],
+      ["deleteExperiment", "/api/experiments/884102/delete"],
+    ] as const)("%s posts an empty body", async (method, url) => {
+      mockAxiosInstance.post.mockResolvedValue({ data: experiment });
+
+      await client[method]({ experimentId: 884102 });
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(url, {});
+    });
+
+    it("declares a winner", async () => {
+      mockAxiosInstance.post.mockResolvedValue({ data: experiment });
+
+      await client.declareExperimentWinner({
+        experimentId: 884102,
+        variantId: 2,
+      });
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        "/api/experiments/884102/winner",
+        { variantId: 2 }
+      );
     });
   });
 });

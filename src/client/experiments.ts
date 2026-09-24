@@ -1,15 +1,25 @@
 import {
-  ExperimentDetails,
-  ExperimentDetailsSchema,
+  CopyExperimentVariantParams,
+  CreateExperimentParams,
+  DeclareExperimentWinnerParams,
+  ExperimentIdParams,
   ExperimentMetricsResponse,
+  ExperimentResponse,
+  ExperimentResponseSchema,
+  ExperimentTotalsResponse,
+  ExperimentTotalsResponseSchema,
+  ExperimentTrendsResponse,
+  ExperimentTrendsResponseSchema,
   GetExperimentMetricsParams,
   GetExperimentParams,
+  GetExperimentTrendsParams,
   GetExperimentVariantsParams,
   GetExperimentVariantsResponse,
   GetExperimentVariantsResponseSchema,
   ListExperimentsParams,
   ListExperimentsResponse,
   ListExperimentsResponseSchema,
+  UpdateExperimentSettingsParams,
 } from "../types/experiments.js";
 import type { Constructor } from "./base.js";
 import type { BaseIterableClient } from "./base.js";
@@ -89,11 +99,11 @@ export function Experiments<T extends Constructor<BaseIterableClient>>(
 
     async getExperiment(
       params: GetExperimentParams
-    ): Promise<ExperimentDetails> {
+    ): Promise<ExperimentResponse> {
       const url = `/api/experiments/${params.experimentId}`;
       const response = await this.client.get(url);
 
-      return validateResponse(response, ExperimentDetailsSchema);
+      return validateResponse(response, ExperimentResponseSchema);
     }
 
     async getExperimentVariants(
@@ -102,10 +112,133 @@ export function Experiments<T extends Constructor<BaseIterableClient>>(
       const url = `/api/experiments/${params.experimentId}/variants`;
       const response = await this.client.get(url);
 
-      return validateResponse(
-        response,
-        GetExperimentVariantsResponseSchema
+      return validateResponse(response, GetExperimentVariantsResponseSchema);
+    }
+
+    async getExperimentTotals(
+      params: ExperimentIdParams
+    ): Promise<ExperimentTotalsResponse> {
+      const response = await this.client.get(
+        `/api/experiments/${params.experimentId}/totals`
       );
+      return validateResponse(response, ExperimentTotalsResponseSchema);
+    }
+
+    async getExperimentTrends(
+      params: GetExperimentTrendsParams
+    ): Promise<ExperimentTrendsResponse> {
+      const queryParams = new URLSearchParams();
+      if (params.startDateTime) {
+        queryParams.append("startDateTime", params.startDateTime);
+      }
+      if (params.endDateTime) {
+        queryParams.append("endDateTime", params.endDateTime);
+      }
+      const query = queryParams.toString();
+      const response = await this.client.get(
+        `/api/experiments/${params.experimentId}/trends${query ? `?${query}` : ""}`
+      );
+      return validateResponse(response, ExperimentTrendsResponseSchema);
+    }
+
+    async createExperiment(
+      params: CreateExperimentParams
+    ): Promise<ExperimentResponse> {
+      const body: CreateExperimentParams = {
+        campaignId: params.campaignId,
+        experimentType: params.experimentType,
+      };
+      if (params.name !== undefined) {
+        body.name = params.name;
+      }
+
+      const response = await this.client.post("/api/experiments", body);
+      return validateResponse(response, ExperimentResponseSchema);
+    }
+
+    async copyExperimentVariant(
+      params: CopyExperimentVariantParams
+    ): Promise<ExperimentResponse> {
+      const body: Omit<CopyExperimentVariantParams, "experimentId"> = {
+        copyFromTemplateId: params.copyFromTemplateId,
+      };
+      if (params.name !== undefined) {
+        body.name = params.name;
+      }
+
+      const response = await this.client.post(
+        `/api/experiments/${params.experimentId}/variants`,
+        body
+      );
+      return validateResponse(response, ExperimentResponseSchema);
+    }
+
+    async updateExperimentSettings(
+      params: UpdateExperimentSettingsParams
+    ): Promise<ExperimentResponse> {
+      const body: Omit<UpdateExperimentSettingsParams, "experimentId"> = {};
+      if (params.conversionEventSettings !== undefined) {
+        body.conversionEventSettings = params.conversionEventSettings;
+      }
+      if (params.holdoutSettings !== undefined) {
+        body.holdoutSettings = params.holdoutSettings;
+      }
+      if (params.explorationBlastSettings !== undefined) {
+        body.explorationBlastSettings = params.explorationBlastSettings;
+      }
+      if (params.explorationTriggerSettings !== undefined) {
+        body.explorationTriggerSettings = params.explorationTriggerSettings;
+      }
+      if (params.evenlySplitVariations !== undefined) {
+        body.evenlySplitVariations = params.evenlySplitVariations;
+      }
+
+      const response = await this.client.patch(
+        `/api/experiments/${params.experimentId}/settings`,
+        body
+      );
+      return validateResponse(response, ExperimentResponseSchema);
+    }
+
+    async startExperiment(
+      params: ExperimentIdParams
+    ): Promise<ExperimentResponse> {
+      const response = await this.client.post(
+        `/api/experiments/${params.experimentId}/start`,
+        {}
+      );
+      return validateResponse(response, ExperimentResponseSchema);
+    }
+
+    async cancelExperiment(
+      params: ExperimentIdParams
+    ): Promise<ExperimentResponse> {
+      const response = await this.client.post(
+        `/api/experiments/${params.experimentId}/cancel`,
+        {}
+      );
+      return validateResponse(response, ExperimentResponseSchema);
+    }
+
+    async declareExperimentWinner(
+      params: DeclareExperimentWinnerParams
+    ): Promise<ExperimentResponse> {
+      const { experimentId, variantId } = params;
+      const response = await this.client.post(
+        `/api/experiments/${experimentId}/winner`,
+        { variantId }
+      );
+      return validateResponse(response, ExperimentResponseSchema);
+    }
+
+    async deleteExperiment(
+      params: ExperimentIdParams
+    ): Promise<ExperimentResponse> {
+      const response = await this.client.post(
+        `/api/experiments/${params.experimentId}/delete`,
+        {}
+      );
+      return validateResponse(response, ExperimentResponseSchema);
     }
   };
 }
